@@ -50,6 +50,7 @@ public final class Database {
 		try {
 			if (connection != null) {
 				connection.close();
+				System.out.println("Connection closed.");
 			}
 		} catch (Exception e) {
 		}
