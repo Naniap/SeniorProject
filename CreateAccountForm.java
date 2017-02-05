@@ -8,6 +8,11 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.border.EmptyBorder;
+
+import DAO.User;
+import DAO.UserDAOImpl;
+import Database.Database;
+
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
@@ -73,6 +78,10 @@ public class CreateAccountForm extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				if (!Arrays.equals(txt_Confirm.getPassword(), txt_Pass.getPassword())) {
 					JOptionPane.showMessageDialog(null, "Passwords are not the same, please re-enter.", "Password Verification Error", JOptionPane.ERROR_MESSAGE);
+				}
+				else {
+					UserDAOImpl UDAO = new UserDAOImpl();
+					UDAO.insert(new User(txt_User.getText(), Database.sha512_Encrpyt(new String(txt_Pass.getPassword()), new String(txt_Pass.getPassword()).substring(1)), txt_Email.getText()));
 				}
 			}
 		});
