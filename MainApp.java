@@ -3,7 +3,11 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import DAO.User;
+import DAO.UserDAOImpl;
 import Database.*;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -16,7 +20,8 @@ public class MainApp {
 	private Connection connection = Database.getConnection();
 	private JFrame frame;
 	private JTextField txt_UName;
-	private JTextField txt_PWord;
+	private JPasswordField txt_PWord;
+	private User user = null;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -60,7 +65,7 @@ public class MainApp {
 		frame.getContentPane().add(txt_UName);
 		txt_UName.setColumns(10);
 		
-		txt_PWord = new JTextField();
+		txt_PWord = new JPasswordField();
 		txt_PWord.setBounds(76, 76, 174, 20);
 		frame.getContentPane().add(txt_PWord);
 		txt_PWord.setColumns(10);
@@ -76,7 +81,18 @@ public class MainApp {
 		JButton btn_Login = new JButton("Login");
 		btn_Login.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				if (user != null) {
+					System.out.println("User " + user.getUserName() + " is already logged in.");
+					return;
+				}
+				UserDAOImpl UDAO = new UserDAOImpl();
+				user = UDAO.login(txt_UName.getText(), Database.sha512_Encrpyt(new String(txt_PWord.getPassword()), new String(txt_PWord.getPassword()).substring(1)));
+				if (user != null) {
+					System.out.println("Successfully logged in as: " + user.getUserName());
+					//Launch a new window logging the user in.
+				}
+				else 
+					System.out.println("Failed login...");
 			}
 		});
 		btn_Login.setBounds(66, 128, 89, 23);

@@ -55,7 +55,7 @@ public class UserDAOImpl implements UserDAO, Serializable {
 		try {
 			System.out.println(password);
 			PreparedStatement pstmt = connection.prepareStatement(
-					"SELECT id, username, password, lastlogin, email FROM login WHERE username = ? AND password = ?");
+					"SELECT id, username, password, email, lastlogin FROM login WHERE username = ? AND password = ?");
 			pstmt.setString(1, user);
 			pstmt.setString(2, password);
 			ResultSet rs = pstmt.executeQuery();
