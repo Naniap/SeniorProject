@@ -95,9 +95,6 @@ public class CreateAccountForm extends JFrame {
 		
 		this.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
-                /*int i=JOptionPane.showConfirmDialog(null, "Seguro que quiere salir?");
-                if(i==0)
-                    System.exit(0);//cierra aplicacion*/
             	contentPane.setVisible(false);
             	parent.setVisible(true);
             }

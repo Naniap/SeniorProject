@@ -20,11 +20,12 @@ public class UserDAOImpl implements UserDAO, Serializable {
 		connection = Database.getConnection();
 		try {
 			PreparedStatement preparedStatement = connection
-					.prepareStatement("INSERT INTO login (username, password, lastlogin, email) VALUES (?, ?, ?, ?)");
+					.prepareStatement("INSERT INTO login (username, password, lastlogin, email, onlinestatus) VALUES (?, ?, ?, ?, ?)");
 			preparedStatement.setString(1, user.getUserName());
 			preparedStatement.setString(2, user.getPassword());
 			preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 			preparedStatement.setString(4, user.getEmail());
+			preparedStatement.setInt(5, user.getOnlineStatus());
 			preparedStatement.executeUpdate();
 			preparedStatement.close();
 		} catch (SQLException e) {
@@ -34,15 +35,28 @@ public class UserDAOImpl implements UserDAO, Serializable {
 	}
 
 	@Override
-	public void update(User user, Timestamp time) {
+	public void update(User user, Timestamp time, boolean updateTimestamp) {
 		connection = Database.getConnection();
 		try {
-			PreparedStatement pstmt = connection
-					.prepareStatement("UPDATE user SET username = ?, password = ?, lastlogin = ? WHERE id = ?");
-			pstmt.setString(1, user.getUserName());
-			pstmt.setString(2, user.getPassword());
-			pstmt.setTimestamp(3, user.getLastLogin());
-			pstmt.setInt(4, user.getId());
+			PreparedStatement pstmt;
+			if (updateTimestamp) {
+				pstmt = connection
+						.prepareStatement("UPDATE login SET username = ?, password = ?, lastlogin = ?, onlinestatus = ? WHERE id = ?");
+				pstmt.setString(1, user.getUserName());
+				pstmt.setString(2, user.getPassword());
+				pstmt.setTimestamp(3, user.getLastLogin());
+				pstmt.setInt(4, user.getOnlineStatus());
+				pstmt.setInt(5, user.getId());
+			}
+			else
+			{
+				pstmt = connection
+						.prepareStatement("UPDATE login SET username = ?, password = ?, onlinestatus = ? WHERE id = ?");
+				pstmt.setString(1, user.getUserName());
+				pstmt.setString(2, user.getPassword());
+				pstmt.setInt(3, user.getOnlineStatus());
+				pstmt.setInt(4, user.getId());
+			}
 			pstmt.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println(e);
@@ -55,12 +69,12 @@ public class UserDAOImpl implements UserDAO, Serializable {
 		try {
 			System.out.println(password);
 			PreparedStatement pstmt = connection.prepareStatement(
-					"SELECT id, username, password, email, lastlogin FROM login WHERE username = ? AND password = ?");
+					"SELECT id, username, password, email, lastlogin, onlinestatus FROM login WHERE username = ? AND password = ?");
 			pstmt.setString(1, user);
 			pstmt.setString(2, password);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
-				return new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5));
+				return new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6));
 			return null;
 		} catch (SQLException e) {
 			System.out.println(e);
@@ -74,7 +88,7 @@ public class UserDAOImpl implements UserDAO, Serializable {
 		try {
 			ArrayList<User> usrArr = new ArrayList<>();
 			PreparedStatement pstmt = connection
-					.prepareStatement("SELECT id, username, password, lastlogin FROM login");
+					.prepareStatement("SELECT id, username, password, email, lastlogin, onlinestatus FROM login");
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				int id = rs.getInt(1);
@@ -82,7 +96,8 @@ public class UserDAOImpl implements UserDAO, Serializable {
 				String password = rs.getString(3);
 				String email = rs.getString(4);
 				Timestamp lastLogin = rs.getTimestamp(5);
-				User usr = new User(id, name, password, email, lastLogin);
+				int onlineStatus = rs.getInt(6);
+				User usr = new User(id, name, password, email, lastLogin, onlineStatus);
 				usrArr.add(usr);
 			}
 			return usrArr;

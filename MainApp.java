@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.Connection;
+import java.sql.Timestamp;
 import java.awt.event.ActionEvent;
 
 public class MainApp {
@@ -89,6 +90,10 @@ public class MainApp {
 				user = UDAO.login(txt_UName.getText(), Database.sha512_Encrpyt(new String(txt_PWord.getPassword()), new String(txt_PWord.getPassword()).substring(1)));
 				if (user != null) {
 					System.out.println("Successfully logged in as: " + user.getUserName());
+					user.setOnlineStatus(Database.ONLINE);
+					user.setLastLogin(new Timestamp(System.currentTimeMillis()));
+					new FriendsList(user).setVisible(true);
+					frame.dispose();
 					//Launch a new window logging the user in.
 				}
 				else 

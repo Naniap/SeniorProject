@@ -18,6 +18,11 @@ public final class Database {
 	/*
 	 * members are public because they're static and final, intended to be accessed from other classes, but not modified.
 	 */
+	public final static int ONLINE = 1;
+	public final static int AWAY = 2;
+	public final static int SHOWASOFFLINE = 3;
+	public final static int OFFLINE = 4;
+	
 	private final static String dbName = "messagesystem"; 												//database name
 	private final static String dbPassword = "Zxflk;S]2aAS34#(za)1A2xD5T2A3$6("; 						//database password
 	private final static String dbLoginUser = "WSU";													//database login user

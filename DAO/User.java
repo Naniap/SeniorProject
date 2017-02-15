@@ -11,13 +11,15 @@ public class User implements Serializable {
 	private Timestamp lastLogin;
 	private String password;
 	private String email;
+	private int onlineStatus;
 
-	public User(int id, String name, String password, String email, Timestamp lastLogin) {
+	public User(int id, String name, String password, String email, Timestamp lastLogin, int onlineStatus) {
 		this.id = id;
 		this.name = name;
 		this.password = password;
 		this.lastLogin = lastLogin;
 		this.setEmail(email);
+		this.setOnlineStatus(onlineStatus);
 	}
 
 	public User(String name, String password, String email) {
@@ -32,7 +34,7 @@ public class User implements Serializable {
 
 	public void setPassword(String password) {
 		this.password = password;
-		uDAO.update(this, lastLogin);
+		uDAO.update(this, lastLogin, false);
 	}
 
 	public Timestamp getLastLogin() {
@@ -41,7 +43,7 @@ public class User implements Serializable {
 
 	public void setLastLogin(Timestamp lastLogin) {
 		this.lastLogin = lastLogin;
-		uDAO.update(this, lastLogin);
+		uDAO.update(this, lastLogin, true);
 	}
 
 	public String getUserName() {
@@ -50,7 +52,7 @@ public class User implements Serializable {
 
 	public void setUserName(String userName) {
 		this.name = userName;
-		uDAO.update(this, lastLogin);
+		uDAO.update(this, lastLogin, false);
 	}
 
 	public int getId() {
@@ -67,6 +69,15 @@ public class User implements Serializable {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public int getOnlineStatus() {
+		return onlineStatus;
+	}
+
+	public void setOnlineStatus(int onlineStatus) {
+		this.onlineStatus = onlineStatus;
+		uDAO.update(this, lastLogin, false);
 	}
 
 }
