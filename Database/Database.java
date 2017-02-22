@@ -4,7 +4,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+
+import DAO.User;
 
 /***
  * 
@@ -84,5 +89,22 @@ public final class Database {
 			e.printStackTrace();
 		}
 		return generatedPassword;
+	}
+	public static ArrayList<User> selectFriends(User currentUser) {
+		ArrayList<User> users = new ArrayList<>();
+		PreparedStatement pstmt;
+		Connection con = getConnection();
+		try {
+			pstmt = con.prepareStatement("SELECT username, onlinestatus, login.id FROM login INNER JOIN friendslist ON loginid WHERE friendid = ?");
+			pstmt.setInt(1, currentUser.getId());
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				users.add(new User(rs.getString(1), rs.getInt(2), rs.getInt(3)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return users;
+		
 	}
 }

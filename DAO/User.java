@@ -2,6 +2,7 @@ package DAO;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 public class User implements Serializable {
 	private static final long serialVersionUID = 3319852351272211903L;
@@ -12,6 +13,7 @@ public class User implements Serializable {
 	private String password;
 	private String email;
 	private int onlineStatus;
+	private ArrayList<User> friends;
 
 	public User(int id, String name, String password, String email, Timestamp lastLogin, int onlineStatus) {
 		this.id = id;
@@ -20,6 +22,12 @@ public class User implements Serializable {
 		this.lastLogin = lastLogin;
 		this.setEmail(email);
 		this.setOnlineStatus(onlineStatus);
+	}
+
+	public User(String friendName, int onlineStatus, int id) {
+		this.name = friendName;
+		this.onlineStatus = onlineStatus;
+		this.id = id;
 	}
 
 	public User(String name, String password, String email) {

@@ -3,7 +3,6 @@ package DAO;
 import java.io.Serializable;
 import Database.*;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,18 +13,17 @@ public class UserDAOImpl implements UserDAO, Serializable {
 	private static final long serialVersionUID = 1L;
 	Connection connection = null;
 
-
 	@Override
 	public void insert(User user) {
 		connection = Database.getConnection();
 		try {
-			PreparedStatement preparedStatement = connection
-					.prepareStatement("INSERT INTO login (username, password, lastlogin, email, onlinestatus) VALUES (?, ?, ?, ?, ?)");
+			PreparedStatement preparedStatement = connection.prepareStatement(
+					"INSERT INTO login (username, password, lastlogin, email, onlinestatus) VALUES (?, ?, ?, ?, ?)");
 			preparedStatement.setString(1, user.getUserName());
 			preparedStatement.setString(2, user.getPassword());
 			preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 			preparedStatement.setString(4, user.getEmail());
-			preparedStatement.setInt(5, user.getOnlineStatus());
+			preparedStatement.setInt(5, 4);
 			preparedStatement.executeUpdate();
 			preparedStatement.close();
 		} catch (SQLException e) {
@@ -40,16 +38,14 @@ public class UserDAOImpl implements UserDAO, Serializable {
 		try {
 			PreparedStatement pstmt;
 			if (updateTimestamp) {
-				pstmt = connection
-						.prepareStatement("UPDATE login SET username = ?, password = ?, lastlogin = ?, onlinestatus = ? WHERE id = ?");
+				pstmt = connection.prepareStatement(
+						"UPDATE login SET username = ?, password = ?, lastlogin = ?, onlinestatus = ? WHERE id = ?");
 				pstmt.setString(1, user.getUserName());
 				pstmt.setString(2, user.getPassword());
 				pstmt.setTimestamp(3, user.getLastLogin());
 				pstmt.setInt(4, user.getOnlineStatus());
 				pstmt.setInt(5, user.getId());
-			}
-			else
-			{
+			} else {
 				pstmt = connection
 						.prepareStatement("UPDATE login SET username = ?, password = ?, onlinestatus = ? WHERE id = ?");
 				pstmt.setString(1, user.getUserName());
@@ -74,7 +70,8 @@ public class UserDAOImpl implements UserDAO, Serializable {
 			pstmt.setString(2, password);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
-				return new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6));
+				return new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5),
+						rs.getInt(6));
 			return null;
 		} catch (SQLException e) {
 			System.out.println(e);
