@@ -103,4 +103,28 @@ public class UserDAOImpl implements UserDAO, Serializable {
 		return null;
 	}
 
+	@Override
+	public User select(String user) {
+		connection = Database.getConnection();
+		try {
+			User userObj = null;
+			PreparedStatement pstmt = connection
+					.prepareStatement("SELECT id, username, password, email, lastlogin, onlinestatus FROM login WHERE username = ?");
+			pstmt.setString(1, user);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				int id = rs.getInt(1);
+				String name = rs.getString(2);
+				String password = rs.getString(3);
+				String email = rs.getString(4);
+				Timestamp lastLogin = rs.getTimestamp(5);
+				int onlineStatus = rs.getInt(6);
+				userObj = new User(id, name, password, email, lastLogin, onlineStatus);
+			}
+			return userObj;
+		} catch (SQLException e) {
+		}
+		return null;
+	}
+
 }

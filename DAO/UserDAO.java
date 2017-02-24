@@ -11,4 +11,6 @@ public interface UserDAO {
 	public User login(String user, String password);
 
 	public ArrayList<User> selectAll();
+	
+	public User select(String user); // usernames are unique, so we can use them as a primary key of sorts.
 }

@@ -2,6 +2,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import DAO.User;
+import DAO.UserDAOImpl;
 import Database.Database;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -11,22 +12,28 @@ import java.awt.event.ActionEvent;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.Choice;
+import java.awt.Point;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.awt.event.ItemEvent;
 
 public class FriendsList extends JFrame {
-
+	private ArrayList<String> chatSessions = new ArrayList<>();
+	private ArrayList<ChatWindow> chatWindows = new ArrayList<>();
 	private JPanel contentPane;
 	private JTable table;
+	private FriendsList friendsList;
 	User user;
 
 	/**
 	 * Create the frame.
 	 */
 	public FriendsList(User user) {
+		friendsList = this;
 		this.user = user;
 		setTitle(user.getUserName() + " Friend's List");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,6 +68,28 @@ public class FriendsList extends JFrame {
 				return false;
 			}
 		};
+		table.addMouseListener(new MouseAdapter() {
+		    public void mousePressed(MouseEvent me) {
+		        JTable table =(JTable) me.getSource();
+		        Point p = me.getPoint();
+		        int row = table.rowAtPoint(p);
+		        if (me.getClickCount() == 2) {
+		        	Object o = table.getModel().getValueAt(row, 0);
+		            UserDAOImpl UDAO = new UserDAOImpl();
+		            User targetUser = UDAO.select(o.toString());
+		            if (chatSessions.contains(targetUser.getUserName())) {
+		            	System.out.println("User already has chat window open.");
+		            	return;
+		            }
+		            ChatWindow chatSession = new ChatWindow(user, targetUser, friendsList);
+		            if (chatSession != null) {
+		            	chatSessions.add(targetUser.getUserName());
+		            	chatWindows.add(chatSession);
+		            	chatSession.setVisible(true);
+		            }
+		        }
+		    }
+		});
 		String header[] = new String[] { "Friends" };
 		dtm.setColumnIdentifiers(header);
 		for (User u : friends) {
@@ -107,5 +136,8 @@ public class FriendsList extends JFrame {
 				Database.closeConnection();
 			}
 		});
+	}
+	public ArrayList<String> getChatSession () {
+		return chatSessions;
 	}
 }
