@@ -18,21 +18,55 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.awt.event.ItemEvent;
 
-public class FriendsList extends JFrame {
+public class FriendsList extends JFrame{
 	private ArrayList<String> chatSessions = new ArrayList<>();
 	private ArrayList<ChatWindow> chatWindows = new ArrayList<>();
 	private JPanel contentPane;
 	private JTable table;
 	private FriendsList friendsList;
+	private Socket socket;
+	private ArrayList<User> friends;
+	private DefaultTableModel dtm;
+	private Thread inputThread;
 	User user;
 
 	/**
 	 * Create the frame.
 	 */
 	public FriendsList(User user) {
+		/*
+		 * Connect to the server
+		 */
+        InputStream serverInput = null;
+        OutputStream serverOutput = null;
+        OutputStreamWriter osw = null;
+        
+		
+        try
+        {
+            socket = new Socket("localhost", 5000);
+            serverOutput = socket.getOutputStream();
+            serverInput = socket.getInputStream();
+            osw = new OutputStreamWriter(serverOutput);
+            
+        }
+        catch (IOException e)
+        {
+            System.out.println("error connecting to Server");
+        }
+        
+		/*
+		 * End connect
+		 */
 		friendsList = this;
 		this.user = user;
 		setTitle(user.getUserName() + " Friend's List");
@@ -61,8 +95,8 @@ public class FriendsList extends JFrame {
 		table = new JTable();
 		table.setBounds(0, 87, 264, 472);
 		contentPane.add(table);
-		ArrayList<User> friends = Database.selectFriends(user);
-		DefaultTableModel dtm = new DefaultTableModel(0, 0) {
+		friends = Database.selectFriends(user);
+		dtm = new DefaultTableModel(0, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -81,7 +115,9 @@ public class FriendsList extends JFrame {
 		            	System.out.println("User already has chat window open.");
 		            	return;
 		            }
-		            ChatWindow chatSession = new ChatWindow(user, targetUser, friendsList);
+		            if (socket == null)
+		            	return;
+		            ChatWindow chatSession = new ChatWindow(socket, user, targetUser, friendsList);
 		            if (chatSession != null) {
 		            	chatSessions.add(targetUser.getUserName());
 		            	chatWindows.add(chatSession);
@@ -92,23 +128,7 @@ public class FriendsList extends JFrame {
 		});
 		String header[] = new String[] { "Friends" };
 		dtm.setColumnIdentifiers(header);
-		for (User u : friends) {
-			if (u.getOnlineStatus() <= Database.AWAY) // user is AWAY or ONLINE
-														// are the only ways to
-														// see if the user is
-														// online
-				dtm.addRow(new Object[] { u.getUserName() });
-		}
-		dtm.addRow(new Object[] { "----------------------------" });
-		dtm.addRow(new Object[] { "Offline Friends" });
-		dtm.addRow(new Object[] { "----------------------------" });
-		for (User u : friends) {
-			if (u.getOnlineStatus() > Database.AWAY) {
-				dtm.addRow(new Object[] { u.getUserName() });
-			}
-		}
-		table.setModel(dtm);
-
+		//updateList();
 		Choice choice = new Choice();
 		choice.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
@@ -136,8 +156,44 @@ public class FriendsList extends JFrame {
 				Database.closeConnection();
 			}
 		});
+		final Scanner scan = new Scanner(serverInput);
+		inputThread = new Thread() {
+			public void run() {
+				while (true) {
+					String message = scan.nextLine();
+					System.out.println(message);
+					if (message.equalsIgnoreCase("Force Refresh")) {
+						updateList();
+					}
+				}
+			}
+		};
+		inputThread.start();
 	}
 	public ArrayList<String> getChatSession () {
 		return chatSessions;
+	}
+	public void updateList() {
+		friends = Database.selectFriends(user);
+		int rowCount = dtm.getRowCount();
+		for (int i = rowCount - 1; i >= 0; i--) {
+		    dtm.removeRow(i);
+		}
+		for (User u : friends) {
+			if (u.getOnlineStatus() <= Database.AWAY) // user is AWAY or ONLINE
+														// are the only ways to
+														// see if the user is
+														// online
+				dtm.addRow(new Object[] { u.getUserName() });
+		}
+		dtm.addRow(new Object[] { "----------------------------" });
+		dtm.addRow(new Object[] { "Offline Friends" });
+		dtm.addRow(new Object[] { "----------------------------" });
+		for (User u : friends) {
+			if (u.getOnlineStatus() > Database.AWAY) {
+				dtm.addRow(new Object[] { u.getUserName() });
+			}
+		}
+		table.setModel(dtm);
 	}
 }

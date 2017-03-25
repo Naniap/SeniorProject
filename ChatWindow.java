@@ -17,20 +17,31 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.util.Date;
+import java.util.Scanner;
 import java.awt.event.ActionEvent;
 
 public class ChatWindow extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField txt_Send;
+	private JTextPane txt_Receive;
 	private User targetUser;
 	private User originUser;
+	private Socket sock;
 	/**
 	 * Create the frame.
 	 */
-	public ChatWindow(User originUser, User targetUser, FriendsList friendsList) {
+	public ChatWindow(Socket sock, User originUser, User targetUser, FriendsList friendsList) {
+		this.sock = sock;
 		this.originUser = originUser;
 		this.targetUser = targetUser;
+		
 		setTitle("Chat with " + targetUser.getUserName());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 460, 322);
@@ -38,7 +49,7 @@ public class ChatWindow extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		
-		JTextPane txt_Receive = new JTextPane();
+		txt_Receive = new JTextPane();
 		txt_Receive.setEditable(false);
 		
 		txt_Send = new JTextField();
@@ -47,7 +58,7 @@ public class ChatWindow extends JFrame {
 		JButton txt_Submit = new JButton("Submit");
 		txt_Submit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//send message
+				sendMessage();
 			}
 		});
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
@@ -75,5 +86,22 @@ public class ChatWindow extends JFrame {
 				friendsList.getChatSession().remove(targetUser.getUserName());
 			}
 		});
+	}
+	private void sendMessage() {
+        InputStream serverInput = null;
+        OutputStream serverOutput = null;
+        Scanner scan = null;
+        OutputStreamWriter osw = null;
+		try {
+			serverOutput = sock.getOutputStream();
+	        serverInput = sock.getInputStream();
+	        osw = new OutputStreamWriter(serverOutput);
+	        	        
+	        System.out.println(txt_Send.getText());
+	        txt_Receive.setText(txt_Receive.getText() + originUser.name + ": " + txt_Send.getText() + "\n");
+	        txt_Send.setText("");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
