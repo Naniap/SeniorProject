@@ -4,6 +4,8 @@ import javax.swing.border.EmptyBorder;
 import DAO.User;
 import DAO.UserDAOImpl;
 import Database.Database;
+import Server.ChatServer;
+
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -37,6 +39,7 @@ public class FriendsList extends JFrame{
 	private ArrayList<User> friends;
 	private DefaultTableModel dtm;
 	private Thread inputThread;
+	private OutputStreamWriter osw;
 	User user;
 
 	/**
@@ -48,7 +51,7 @@ public class FriendsList extends JFrame{
 		 */
         InputStream serverInput = null;
         OutputStream serverOutput = null;
-        OutputStreamWriter osw = null;
+        osw = null;
         
 		
         try
@@ -154,6 +157,7 @@ public class FriendsList extends JFrame{
 			public void windowClosing(WindowEvent e) {
 				user.setOnlineStatus(Database.OFFLINE);
 				Database.closeConnection();
+				ChatServer.removeUser(user.getUserName());
 			}
 		});
 		final Scanner scan = new Scanner(serverInput);
@@ -164,6 +168,9 @@ public class FriendsList extends JFrame{
 					System.out.println(message);
 					if (message.equalsIgnoreCase("Force Refresh")) {
 						updateList();
+					}
+					if (message.equalsIgnoreCase("What is your username?")) {
+						userName();
 					}
 				}
 			}
@@ -195,5 +202,14 @@ public class FriendsList extends JFrame{
 			}
 		}
 		table.setModel(dtm);
+	}
+	public void userName() {
+		try {
+			osw.write("Username: " + user.getUserName() + "\r\n");
+			osw.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

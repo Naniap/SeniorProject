@@ -23,6 +23,7 @@ import DAO.UserDAOImpl;
 public class ClientConnectionHandler extends Thread {
 
 	private User newUser;
+	private String userName;
 
 	public boolean hasMessage;
 	public boolean hasNewUser;
@@ -95,30 +96,35 @@ public class ClientConnectionHandler extends Thread {
 
 	@Override
 	public void run() {
+		// loop to continue asking options
+		
 		try {
-			osw.write("Welcome to BBServer Console.\r\n");
-			osw.write("This is the development, pre-GUI configuration for testing\r\n");
-
+			osw.write("What is your username?\r\n");
 			osw.flush();
-			// loop to continue asking options
-			while (!option.equalsIgnoreCase("exit")) {
-				displayOptionMenu();
-				if (!scanner.hasNextLine()) {
-					return;
-				}
-				option = scanner.nextLine();
-
-				//processOption(option);
-			}
-
 		} catch (IOException e) {
-			System.out.println("Error reading/writing from/to client IN RUN");
 			e.printStackTrace();
+		}
+		while (!option.equalsIgnoreCase("exit")) {
+			if (!scanner.hasNextLine()) {
+				return;
+			}
+			option = scanner.nextLine();
+			System.out.println(option);
+			if (option.contains("Chat message: ")) {
+				ChatServer.sendMessageTo("Mike");
+				System.out.println("Chat message detected. User: " + option.split(",")[0].split("Chat message: ")[1] + " Target user: " + option.split(",")[1] + " Message contents: " + option.split(",")[2]);
+			}
+			if (option.contains("Username: ")) {
+				userName = option.split("Username: ")[1];
+				System.out.println("Username bound to: " + userName);
+			}
 		}
 
 	}
 	public void forceRefresh() {
 		try {
+			osw.write(".\r\n");
+			osw.flush();
 			osw.write("Force Refresh\r\n");
 			osw.flush();
 		} catch (IOException e) {
@@ -126,168 +132,7 @@ public class ClientConnectionHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
-	public boolean isConnected() throws IOException {
-		boolean stillConnected = true;
-		stillConnected = isAlive();
-		return stillConnected;
+	public String getUserName() {
+		return userName;
 	}
-
-	public boolean hasMessage() {
-		return this.hasMessage;
-	}
-
-
-	public User getNewUser() {
-		return this.newUser;
-	}
-
-
-	public void clearNewUser() {
-		this.newUser = null;
-		this.hasNewUser = false;
-	}
-
-	public boolean hasNewUser() {
-		return this.hasNewUser;
-	}
-
-	public boolean containsLoggedInUser(User u) {
-
-		System.out.println(loggedInUserList.size());
-
-		for (int x = 0; x < loggedInUserList.size(); x++) {
-			if (u.nameMatches(loggedInUserList.get(x).name))
-				return true;
-		}
-		return false;
-	}
-
-	public void viewActiveUsersOption() throws IOException {
-		osw.write("LOGGED IN USERS:\r\n");
-		osw.flush();
-		for (int x = 0; x < loggedInUserList.size(); x++) {
-			osw.write(loggedInUserList.get(x).name + "\r\n");
-			// osw.write(loggedInUserList.get(x).password + "\r\n\r\n");
-
-		}
-	}
-
-	public void exitOption() throws IOException {
-		logUserOut();
-		osw.write("Goodbye.\r\n");
-		osw.flush();
-	}
-	// ...end menu options
-
-	public void invalidOption() throws IOException {
-		osw.write("\r\n Invalid entry.\r\n");
-		osw.flush();
-	}
-
-	public int getLoggedInUserListSize() {
-		return loggedInUserList.size();
-	}
-
-	public void setLoggedInUserList(ArrayList<User> list) {
-		this.loggedInUserList = list;
-	}
-
-	public User getCurrentUser() {
-		return this.currentUser;
-	}
-
-	public boolean hasLogout() {
-		return hasLogout;
-	}
-
-	public void clearLogout() {
-		hasLogout = false;
-		userToLogOut = null;
-	}
-
-	public User getUserToLogOut() {
-		return userToLogOut;
-	}
-
-	public void logUserOut() throws IOException {
-		userToLogOut = currentUser;
-		hasLogout = true;
-		isLoggedIn = false;
-		loggedInUserList.remove(loggedInUserList.indexOf(currentUser));
-
-		//currentUser = null;
-	}
-
-	public void displayOptionMenu() throws IOException {
-		osw.write("\r\n\r\nPlease enter an option:\r\n");
-		osw.write("1. Sign in\r\n");
-		osw.write("2. Sign up\r\n");
-		osw.write("3. Sign out\r\n");
-		osw.write("4. Post Message\r\n");
-		osw.write("5. View recent messages\r\n");
-		osw.write("6. View all messages\r\n");
-		osw.write("7. Search messages by author\r\n");
-		osw.write("8. Search messages by topic\r\n");
-
-		// test options
-		osw.write("9. VIEW ALL USERS\r\n");
-		osw.write("0. VIEW ACTIVE USERS\r\n");
-
-		osw.write("...Or type exit to quit.\r\n");
-
-		osw.flush();
-	}
-
-	/*public void processOption(String o) throws IOException {
-
-		o = eliminateSpaces(o);
-		System.out.println("Server received: " + o);
-		if (o.equals("1") || o.equalsIgnoreCase("signin")) {
-			signInOption();
-		} else if (o.equals("2") || o.equalsIgnoreCase("signup")) {
-			signUpOption();
-		} else if (o.equals("3") || o.equalsIgnoreCase("signout")) {
-			signOutOption();
-		} else if (o.equals("4") || o.equalsIgnoreCase("postmessage") || o.equalsIgnoreCase("post")) {
-			postMessageOption();
-		} else if (o.equals("5") || o.equalsIgnoreCase("viewrecentmessages") || o.equalsIgnoreCase("viewrecent")) {
-			viewRecentMessagesOption();
-		} else if (o.equals("6") || o.equalsIgnoreCase("viewallmessages") || o.equalsIgnoreCase("viewall")) {
-			viewAllMessagesOption();
-		} else if (o.equals("7") || o.equalsIgnoreCase("searchbyauthor") || o.equalsIgnoreCase("searchauthor")) {
-			searchByAuthorOption();
-		} else if (o.equals("8") || o.equalsIgnoreCase("searchbytopic") || o.equalsIgnoreCase("searchtopic")) {
-			searchByTopicOption();
-		} else if (o.equals("getarray")) {
-			oos.reset();
-			oos.writeObject(messageList);
-		}
-		else if (o.equals("refreshdata")) {
-			oos.reset();
-			MessageDAOImpl mDAO = new MessageDAOImpl();
-			messageList = mDAO.selectAll();
-			osw.write("Database Query Select All Messages.\r\n");
-			osw.flush();
-			oos.writeObject(messageList);
-		}
-
-		// test options
-		else if (o.equals("9")) {
-			viewAllUsersOption();
-		} else if (o.equals("0")) {
-			viewActiveUsersOption();
-		}
-
-		// exit option
-		else if (o.equalsIgnoreCase("exit")) {
-			exitOption();
-		} else {
-			invalidOption();
-		}
-	}*/
-
-	public String eliminateSpaces(String s) {
-		return s.replaceAll(" ", "");
-	}
-
 }

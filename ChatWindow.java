@@ -98,6 +98,9 @@ public class ChatWindow extends JFrame {
 	        osw = new OutputStreamWriter(serverOutput);
 	        	        
 	        System.out.println(txt_Send.getText());
+	        osw.write("Chat message: " + originUser.name + "," + targetUser.name + "," + txt_Send.getText() + "\r\n");
+	        osw.flush();
+	        
 	        txt_Receive.setText(txt_Receive.getText() + originUser.name + ": " + txt_Send.getText() + "\n");
 	        txt_Send.setText("");
 		} catch (IOException e) {
