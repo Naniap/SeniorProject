@@ -123,6 +123,12 @@ public class ClientConnectionHandler extends Thread {
 			}
 			if (option.contains("Logout")) {
 				removeUser();
+				for (ClientConnectionHandler c : ChatServer.getConnections())
+					c.forceRefresh();
+			}
+			if (option.contains("Status changed.")) {
+				for (ClientConnectionHandler c : ChatServer.getConnections())
+					c.forceRefresh();
 			}
 		}
 

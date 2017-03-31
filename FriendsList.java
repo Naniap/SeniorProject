@@ -138,12 +138,26 @@ public class FriendsList extends JFrame{
 				switch (arg0.getItem().toString()) {
 				case "Online":
 					user.setOnlineStatus(Database.ONLINE);
+					try {
+						osw.write("Status changed.\r\n");
+						osw.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					break;
 				case "Away":
 					user.setOnlineStatus(Database.AWAY);
 					break;
 				case "Show as offline":
 					user.setOnlineStatus(Database.SHOWASOFFLINE);
+					try {
+						osw.write("Status changed.\r\n");
+						osw.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					break;
 				}
 			}
