@@ -111,12 +111,18 @@ public class ClientConnectionHandler extends Thread {
 			option = scanner.nextLine();
 			System.out.println(option);
 			if (option.contains("Chat message: ")) {
-				ChatServer.sendMessageTo("Mike");
-				System.out.println("Chat message detected. User: " + option.split(",")[0].split("Chat message: ")[1] + " Target user: " + option.split(",")[1] + " Message contents: " + option.split(",")[2]);
+				String message = option.split(",")[2];
+				String targetUser = option.split(",")[1];
+				String originUser = option.split(",")[0].split("Chat message: ")[1];
+				ChatServer.sendMessageTo(originUser, targetUser, message);
+				System.out.println("Chat message detected. User: " + originUser + " Target user: " + targetUser + " Message contents: " + message);
 			}
 			if (option.contains("Username: ")) {
 				userName = option.split("Username: ")[1];
 				System.out.println("Username bound to: " + userName);
+			}
+			if (option.contains("Logout")) {
+				removeUser();
 			}
 		}
 
@@ -131,6 +137,19 @@ public class ClientConnectionHandler extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public void sendMessage(String message, String originUser, String targetUser) {
+		try {
+			osw.write("Message from: " + originUser + "," + targetUser + "," + message + "\r\n");
+			osw.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	public synchronized void removeUser() {
+		System.out.println("User: " + userName + " successfully removed from arraylist.");
+		ChatServer.getConnections().remove(this);
 	}
 	public String getUserName() {
 		return userName;

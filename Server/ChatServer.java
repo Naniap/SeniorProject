@@ -37,22 +37,27 @@ public class ChatServer {
 	public void listen() throws IOException {
 		server = new ServerSocket(portNumber);
 	}
-	public static void sendMessageTo(String targetUser) {
+	public static void sendMessageTo(String originUser, String targetUser, String message) {
 		for (ClientConnectionHandler c : connections) {
 			System.out.println(targetUser);
 			System.out.println(c.getUserName());
 			if (c.getUserName().equals(targetUser)) {
-				System.out.println("Found userName!" );
+				System.out.println("Found target user!!" );
+				c.sendMessage(message, targetUser, originUser);
 			}
 		}
 	}
-	public static void removeUser(String user) {
-		/*for (ClientConnectionHandler c : connections ) {
-			if (c.getUserName().equals(user)) {
-				connections.remove(0);
-			}
-		}*/
-	}
+	/*public static void removeUser(String user) {
+		System.out.println(connections.size());
+		if (connections == null)
+			return;
+		for (ClientConnectionHandler c : connections ) {
+			System.out.println("User: " + c.getName());
+			//if (c.getUserName().equals(user)) {
+			//	connections.remove(c);
+			//}
+		}
+	}*/
 	public void acceptConnection() throws IOException {
 		clientConnection = server.accept();
 
@@ -109,6 +114,9 @@ public class ChatServer {
 			BBS.terminate();
 		}
 
+	}
+	public static ArrayList<ClientConnectionHandler> getConnections() {
+		return connections;
 	}
 
 }

@@ -155,9 +155,16 @@ public class FriendsList extends JFrame{
 		contentPane.add(choice);
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
+				//ChatServer.removeUser(user.getUserName());
+				try {
+					osw.write("Logout\r\n");
+					osw.flush();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				user.setOnlineStatus(Database.OFFLINE);
 				Database.closeConnection();
-				ChatServer.removeUser(user.getUserName());
 			}
 		});
 		final Scanner scan = new Scanner(serverInput);
@@ -169,8 +176,32 @@ public class FriendsList extends JFrame{
 					if (message.equalsIgnoreCase("Force Refresh")) {
 						updateList();
 					}
-					if (message.equalsIgnoreCase("What is your username?")) {
+					if (message.contains("What is your username?")) {
 						userName();
+					}
+					if (message.contains("Message from: ")) {
+						boolean sentMessage = false;
+						String messageFrom = message.split("Message from: ")[1].split(",")[0];
+						String messageTo = message.split("Message from: ")[1].split(",")[1];
+						String messageContents = message.split("Message from: ")[1].split(",")[2];
+						for (ChatWindow c : chatWindows) {
+							if (c.getTargetUser().equals(messageTo)) {
+								c.receiveMessage(messageTo, messageContents);
+								sentMessage = true;
+							}
+						}
+						if (!sentMessage) {
+				            UserDAOImpl UDAO = new UserDAOImpl();
+				            User targetUser = UDAO.select(messageTo);
+				            System.out.println(targetUser.getUserName() + "\n" + user.getUserName());
+				            ChatWindow chatSession = new ChatWindow(socket, user, targetUser, friendsList);
+				            if (chatSession != null) {
+				            	chatSessions.add(targetUser.getUserName());
+				            	chatWindows.add(chatSession);
+				            	chatSession.receiveMessage(messageTo, messageContents);
+				            	chatSession.setVisible(true);
+				            }
+						}
 					}
 				}
 			}
