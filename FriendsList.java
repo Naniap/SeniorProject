@@ -4,8 +4,6 @@ import javax.swing.border.EmptyBorder;
 import DAO.User;
 import DAO.UserDAOImpl;
 import Database.Database;
-import Server.ChatServer;
-
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -25,11 +23,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Scanner;
 import java.awt.event.ItemEvent;
 
 public class FriendsList extends JFrame{
+	private static final long serialVersionUID = -2401808601296366940L;
+	private static final boolean DEBUG = false;
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss");
 	private ArrayList<String> chatSessions = new ArrayList<>();
 	private ArrayList<ChatWindow> chatWindows = new ArrayList<>();
 	private JPanel contentPane;
@@ -40,7 +43,8 @@ public class FriendsList extends JFrame{
 	private DefaultTableModel dtm;
 	private Thread inputThread;
 	private OutputStreamWriter osw;
-	User user;
+	private User user;
+
 
 	/**
 	 * Create the frame.
@@ -100,6 +104,11 @@ public class FriendsList extends JFrame{
 		contentPane.add(table);
 		friends = Database.selectFriends(user);
 		dtm = new DefaultTableModel(0, 0) {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1109174466769474675L;
+
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -115,7 +124,8 @@ public class FriendsList extends JFrame{
 		            UserDAOImpl UDAO = new UserDAOImpl();
 		            User targetUser = UDAO.select(o.toString());
 		            if (chatSessions.contains(targetUser.getUserName())) {
-		            	System.out.println("User already has chat window open.");
+		            	if (DEBUG)
+		            		System.out.println("[" + sdf.format(new Date()) + "] " + "User already has chat window open.");
 		            	return;
 		            }
 		            if (socket == null)
@@ -131,7 +141,6 @@ public class FriendsList extends JFrame{
 		});
 		String header[] = new String[] { "Friends" };
 		dtm.setColumnIdentifiers(header);
-		//updateList();
 		Choice choice = new Choice();
 		choice.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
@@ -186,7 +195,8 @@ public class FriendsList extends JFrame{
 			public void run() {
 				while (true) {
 					String message = scan.nextLine();
-					System.out.println(message);
+	            	if (DEBUG)
+	            		System.out.println("[" + sdf.format(new Date()) + "] " +  "Friendslist receieved: " + message);
 					if (message.equalsIgnoreCase("Force Refresh")) {
 						updateList();
 					}
@@ -195,7 +205,7 @@ public class FriendsList extends JFrame{
 					}
 					if (message.contains("Message from: ")) {
 						boolean sentMessage = false;
-						String messageFrom = message.split("Message from: ")[1].split(",")[0];
+						//String messageFrom = message.split("Message from: ")[1].split(",")[0];
 						String messageTo = message.split("Message from: ")[1].split(",")[1];
 						String messageContents = message.split("Message from: ")[1].split(",")[2];
 						for (ChatWindow c : chatWindows) {
@@ -207,7 +217,8 @@ public class FriendsList extends JFrame{
 						if (!sentMessage) {
 				            UserDAOImpl UDAO = new UserDAOImpl();
 				            User targetUser = UDAO.select(messageTo);
-				            System.out.println(targetUser.getUserName() + "\n" + user.getUserName());
+				            if (DEBUG)
+				            	System.out.println("[" + sdf.format(new Date()) + "] " + targetUser.getUserName() + "\n" + user.getUserName());
 				            ChatWindow chatSession = new ChatWindow(socket, user, targetUser, friendsList);
 				            if (chatSession != null) {
 				            	chatSessions.add(targetUser.getUserName());
@@ -220,10 +231,14 @@ public class FriendsList extends JFrame{
 				}
 			}
 		};
+		scan.close();
 		inputThread.start();
 	}
 	public ArrayList<String> getChatSession () {
 		return chatSessions;
+	}
+	public ArrayList<ChatWindow> getChatWindow () {
+		return chatWindows;
 	}
 	public void updateList() {
 		friends = Database.selectFriends(user);

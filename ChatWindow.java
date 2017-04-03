@@ -1,14 +1,9 @@
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
 import DAO.User;
-import Database.Database;
-
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JTextPane;
@@ -19,23 +14,21 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
 import java.awt.event.ActionEvent;
 
 public class ChatWindow extends JFrame {
-
+	private static final long serialVersionUID = 5967819167561738505L;
 	private JPanel contentPane;
 	private JTextField txt_Send;
 	private JTextPane txt_Receive;
 	private User targetUser;
 	private User originUser;
 	private Socket sock;
+	private SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss");
 	/**
 	 * Create the frame.
 	 */
@@ -90,25 +83,32 @@ public class ChatWindow extends JFrame {
 						.addComponent(txt_Submit)))
 		);
 		contentPane.setLayout(gl_contentPane);
+		/**
+		 * Removes chat window and chat session; this fixes the bug that would not spawn a new window if the targetUser closed
+		 * and the origin user sent a new message resulting in a window that would not pop up.
+		 */
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				friendsList.getChatSession().remove(targetUser.getUserName());
+				ChatWindow toRemove = null;
+				for (ChatWindow c : friendsList.getChatWindow()) {
+					if (c.getTargetUser().equals(targetUser.getUserName())) {
+						toRemove = c;
+					}
+				}
+				friendsList.getChatWindow().remove(toRemove);
 			}
 		});
 	}
 	private void sendMessage() {
-        InputStream serverInput = null;
         OutputStream serverOutput = null;
-        Scanner scan = null;
         OutputStreamWriter osw = null;
 		try {
 			serverOutput = sock.getOutputStream();
-	        serverInput = sock.getInputStream();
 	        osw = new OutputStreamWriter(serverOutput);
 	        	        
 	        osw.write("Chat message: " + originUser.name + "," + targetUser.name + "," + txt_Send.getText() + "\r\n");
 	        osw.flush();
-			SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss");
 	        txt_Receive.setText(/*"[" + sdf.format(new Date()) + "]" +*/ txt_Receive.getText() + originUser.name + ": " + txt_Send.getText() + "\n");
 	        txt_Send.setText("");
 		} catch (IOException e) {
@@ -119,7 +119,6 @@ public class ChatWindow extends JFrame {
 		return targetUser.getUserName();
 	}
 	public void receiveMessage(String originUser, String message) {
-		SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss");
         txt_Receive.setText(/*"[" + sdf.format(new Date()) + "]" + */txt_Receive.getText() + originUser + ": " + message + "\n");
 	}
 }

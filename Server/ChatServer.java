@@ -1,18 +1,10 @@
 package Server;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import DAO.User;
-import DAO.UserDAOImpl;
 
 public class ChatServer {
 
@@ -22,7 +14,6 @@ public class ChatServer {
 	private ArrayList<User> users;
 	private ArrayList<User> loggedInUsers;
 
-	private int maxClients = 10;
 
 	private int portNumber;
 
@@ -47,27 +38,17 @@ public class ChatServer {
 			}
 		}
 	}
-	/*public static void removeUser(String user) {
-		System.out.println(connections.size());
-		if (connections == null)
-			return;
-		for (ClientConnectionHandler c : connections ) {
-			System.out.println("User: " + c.getName());
-			//if (c.getUserName().equals(user)) {
-			//	connections.remove(c);
-			//}
-		}
-	}*/
+	/**
+	 * Currently no connection threshold, most likely won't impose one as this will likely not be large scale,
+	 * easy to impose later if necessary.
+	 * @throws IOException
+	 */
 	public void acceptConnection() throws IOException {
 		clientConnection = server.accept();
-
 		ClientConnectionHandler cch = new ClientConnectionHandler(clientConnection, this.users, this.loggedInUsers);
-
-		//if (checkActiveConnections() < maxClients) {
-			connections.add(cch);
-			cch.start();
-			System.out.println("User accepted.");
-		//}
+		connections.add(cch);
+		cch.start();
+		System.out.println("User accepted.");
 		for (ClientConnectionHandler connectionHandler : connections) {
 			connectionHandler.forceRefresh();
 		}
@@ -81,18 +62,6 @@ public class ChatServer {
 		}
 	}
 
-	/*public int checkActiveConnections() throws IOException {
-		// Check how many threads are still active
-		ClientConnectionHandler cch = null;
-		int activeConnections = 0;
-
-		for (int i = 0; i < connections.size(); i++) {
-			cch = connections.get(i);
-			if (cch.isConnected())
-				activeConnections++;
-		}
-		return activeConnections;
-	}*/
 	public static void main(String[] args) {
 		// BBServer BBS = new BBServer(Integer.parseInt(args[0]));
 		ChatServer BBS = new ChatServer();
