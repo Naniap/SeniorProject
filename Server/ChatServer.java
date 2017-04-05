@@ -30,10 +30,7 @@ public class ChatServer {
 	}
 	public static void sendMessageTo(String originUser, String targetUser, String message) {
 		for (ClientConnectionHandler c : connections) {
-			System.out.println(targetUser);
-			System.out.println(c.getUserName());
 			if (c.getUserName().equals(targetUser)) {
-				System.out.println("Found target user!!" );
 				c.sendMessage(message, targetUser, originUser);
 			}
 		}

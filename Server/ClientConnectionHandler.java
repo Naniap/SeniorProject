@@ -109,7 +109,6 @@ public class ClientConnectionHandler extends Thread {
 				return;
 			}
 			option = scanner.nextLine();
-			System.out.println(option);
 			if (option.contains("Chat message: ")) {
 				String message = option.split(",")[2];
 				String targetUser = option.split(",")[1];

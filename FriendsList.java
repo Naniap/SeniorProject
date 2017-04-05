@@ -231,7 +231,6 @@ public class FriendsList extends JFrame{
 				}
 			}
 		};
-		scan.close();
 		inputThread.start();
 	}
 	public ArrayList<String> getChatSession () {
