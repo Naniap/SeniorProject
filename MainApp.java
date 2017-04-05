@@ -1,6 +1,7 @@
 import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import DAO.User;
@@ -82,14 +83,27 @@ public class MainApp {
 				user = UDAO.login(txt_UName.getText(), Database.sha512_Encrpyt(new String(txt_PWord.getPassword()),
 						new String(txt_PWord.getPassword()).substring(1)));
 				if (user != null) {
+					if (user.getOnlineStatus() == Database.ONLINE) {
+						System.out.println("User " + user.getUserName() + " is already logged in.");
+						return;
+					}
 					System.out.println("Successfully logged in as: " + user.getUserName());
-					user.setOnlineStatus(Database.ONLINE);
-					user.setLastLogin(new Timestamp(System.currentTimeMillis()));
-					new FriendsList(user).setVisible(true);
+					try {
+						FriendsList f = new FriendsList(user);
+						f.setVisible(true);
+					}
+					catch (NullPointerException npe) {
+						System.out.println("Unable to connect to login server.");
+						JOptionPane.showMessageDialog(frame, "Unable to connect to the server.");
+						user = null;
+						return;
+					}
 					frame.dispose();
 					// Launch a new window logging the user in.
-				} else
-					System.out.println("Failed login...");
+				} else {
+					System.out.println("Invalid password or username...");
+					JOptionPane.showMessageDialog(frame, "Invalid password or username, please try again.");
+				}
 			}
 		});
 		btn_Login.setBounds(66, 128, 89, 23);

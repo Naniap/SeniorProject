@@ -3,6 +3,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
+import DAO.Message;
+import DAO.MessageDAOImpl;
 import DAO.User;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -18,6 +20,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
 public class ChatWindow extends JFrame {
@@ -109,10 +112,17 @@ public class ChatWindow extends JFrame {
 	        	        
 	        osw.write("Chat message: " + originUser.name + "," + targetUser.name + "," + txt_Send.getText() + "\r\n");
 	        osw.flush();
+	        MessageDAOImpl mDAO = new MessageDAOImpl();
+	        mDAO.insert(originUser.name, targetUser.name, txt_Send.getText());
 	        txt_Receive.setText(/*"[" + sdf.format(new Date()) + "]" +*/ txt_Receive.getText() + originUser.name + ": " + txt_Send.getText() + "\n");
 	        txt_Send.setText("");
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+	public synchronized void setMessages(ArrayList<Message> messages) {
+		for (Message m : messages) {
+	        txt_Receive.setText(/*"[" + sdf.format(new Date()) + "]" +*/ txt_Receive.getText() + m.getOriginUser() + ": " + m.getMessage() + "\n");
 		}
 	}
 	public String getTargetUser() {

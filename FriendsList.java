@@ -1,6 +1,9 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import DAO.Message;
+import DAO.MessageDAOImpl;
 import DAO.User;
 import DAO.UserDAOImpl;
 import Database.Database;
@@ -23,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,10 +64,12 @@ public class FriendsList extends JFrame{
 		
         try
         {
-            socket = new Socket("localhost", 5000);
+            socket = new Socket("phantomelite.com", 5000);
             serverOutput = socket.getOutputStream();
             serverInput = socket.getInputStream();
             osw = new OutputStreamWriter(serverOutput);
+    		user.setOnlineStatus(Database.ONLINE);
+    		user.setLastLogin(new Timestamp(System.currentTimeMillis()));
             
         }
         catch (IOException e)
@@ -123,6 +129,8 @@ public class FriendsList extends JFrame{
 		        	Object o = table.getModel().getValueAt(row, 0);
 		            UserDAOImpl UDAO = new UserDAOImpl();
 		            User targetUser = UDAO.select(o.toString());
+		            if (targetUser == null)
+		            	return;
 		            if (chatSessions.contains(targetUser.getUserName())) {
 		            	if (DEBUG)
 		            		System.out.println("[" + sdf.format(new Date()) + "] " + "User already has chat window open.");
@@ -132,6 +140,10 @@ public class FriendsList extends JFrame{
 		            	return;
 		            ChatWindow chatSession = new ChatWindow(socket, user, targetUser, friendsList);
 		            if (chatSession != null) {
+		            	MessageDAOImpl mDAO = new MessageDAOImpl();
+		            	ArrayList<Message> messages = mDAO.retrieveMessages(user.name, targetUser.name);
+		            	if (messages != null) 
+		            		chatSession.setMessages(messages);
 		            	chatSessions.add(targetUser.getUserName());
 		            	chatWindows.add(chatSession);
 		            	chatSession.setVisible(true);
