@@ -64,7 +64,7 @@ public class FriendsList extends JFrame{
 		
         try
         {
-            socket = new Socket("phantomelite.com", 5000);
+            socket = new Socket("localhost", 5000);
             serverOutput = socket.getOutputStream();
             serverInput = socket.getInputStream();
             osw = new OutputStreamWriter(serverOutput);
@@ -219,7 +219,8 @@ public class FriendsList extends JFrame{
 						boolean sentMessage = false;
 						//String messageFrom = message.split("Message from: ")[1].split(",")[0];
 						String messageTo = message.split("Message from: ")[1].split(",")[1];
-						String messageContents = message.split("Message from: ")[1].split(",")[2];
+						int i = message.indexOf(',', 1 + message.indexOf(','));
+						String messageContents = message.substring(i+1);
 						for (ChatWindow c : chatWindows) {
 							if (c.getTargetUser().equals(messageTo)) {
 								c.receiveMessage(messageTo, messageContents);

@@ -11,6 +11,8 @@ import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.mysql.jdbc.Messages;
 
@@ -110,7 +112,8 @@ public class ClientConnectionHandler extends Thread {
 			}
 			option = scanner.nextLine();
 			if (option.contains("Chat message: ")) {
-				String message = option.split(",")[2];
+				int i = option.indexOf(',', 1 + option.indexOf(','));
+				String message = option.substring(i+1);
 				String targetUser = option.split(",")[1];
 				String originUser = option.split(",")[0].split("Chat message: ")[1];
 				ChatServer.sendMessageTo(originUser, targetUser, message);
