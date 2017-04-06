@@ -10,6 +10,8 @@ import Database.Database;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
@@ -48,7 +50,8 @@ public class FriendsList extends JFrame{
 	private Thread inputThread;
 	private OutputStreamWriter osw;
 	private User user;
-
+	private JFrame frame;
+	private UserDAOImpl uDAO;
 
 	/**
 	 * Create the frame.
@@ -56,15 +59,16 @@ public class FriendsList extends JFrame{
 	public FriendsList(User user) {
 		/*
 		 * Connect to the server
-		 */
+		 */		            
+		uDAO = new UserDAOImpl();
+		frame = this;
         InputStream serverInput = null;
         OutputStream serverOutput = null;
         osw = null;
         
-		
         try
         {
-            socket = new Socket("localhost", 5000);
+            socket = new Socket("phantomelite.com", 5000);
             serverOutput = socket.getOutputStream();
             serverInput = socket.getInputStream();
             osw = new OutputStreamWriter(serverOutput);
@@ -74,7 +78,7 @@ public class FriendsList extends JFrame{
         }
         catch (IOException e)
         {
-            System.out.println("error connecting to Server");
+            System.out.println("Error connecting to Server");
         }
         
 		/*
@@ -95,11 +99,31 @@ public class FriendsList extends JFrame{
 		JMenuItem mntmLogout = new JMenuItem("Logout");
 		mntmLogout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("Logout pressed.");
-				user.setOnlineStatus(Database.OFFLINE);
+				if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(frame, "Are you sure you wish to logout?", "Logout confirmation", JOptionPane.YES_NO_OPTION)) 
+					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
 		});
 		mnSettings.add(mntmLogout);
+		
+		JMenuItem mntmAddFriend = new JMenuItem("Add Friend");
+		mntmAddFriend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String friend = JOptionPane.showInputDialog("Enter friend's name");
+				User targetFriend = uDAO.select(friend);
+				if (targetFriend == null)
+					JOptionPane.showMessageDialog(frame, "That user does not exist!");
+				else {
+					for (User u : friends) {
+						if (u.getUserName().equals(targetFriend.getUserName()))
+							JOptionPane.showMessageDialog(frame, "You are already friends with that person!");
+						else {
+							//TODO: add friend
+						}
+					}
+				}
+			}
+		});
+		mnSettings.add(mntmAddFriend);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -127,8 +151,7 @@ public class FriendsList extends JFrame{
 		        int row = table.rowAtPoint(p);
 		        if (me.getClickCount() == 2) {
 		        	Object o = table.getModel().getValueAt(row, 0);
-		            UserDAOImpl UDAO = new UserDAOImpl();
-		            User targetUser = UDAO.select(o.toString());
+		            User targetUser = uDAO.select(o.toString());
 		            if (targetUser == null)
 		            	return;
 		            if (chatSessions.contains(targetUser.getUserName())) {
@@ -190,16 +213,7 @@ public class FriendsList extends JFrame{
 		contentPane.add(choice);
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				//ChatServer.removeUser(user.getUserName());
-				try {
-					osw.write("Logout\r\n");
-					osw.flush();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				user.setOnlineStatus(Database.OFFLINE);
-				Database.closeConnection();
+				logout();
 			}
 		});
 		final Scanner scan = new Scanner(serverInput);
@@ -217,7 +231,6 @@ public class FriendsList extends JFrame{
 					}
 					if (message.contains("Message from: ")) {
 						boolean sentMessage = false;
-						//String messageFrom = message.split("Message from: ")[1].split(",")[0];
 						String messageTo = message.split("Message from: ")[1].split(",")[1];
 						int i = message.indexOf(',', 1 + message.indexOf(','));
 						String messageContents = message.substring(i+1);
@@ -236,7 +249,10 @@ public class FriendsList extends JFrame{
 				            if (chatSession != null) {
 				            	chatSessions.add(targetUser.getUserName());
 				            	chatWindows.add(chatSession);
-				            	chatSession.receiveMessage(messageTo, messageContents);
+				            	MessageDAOImpl mDAO = new MessageDAOImpl();
+				            	ArrayList<Message> messages = mDAO.retrieveMessages(user.name, targetUser.name);
+				            	if (messages != null) 
+				            		chatSession.setMessages(messages);
 				            	chatSession.setVisible(true);
 				            }
 						}
@@ -283,5 +299,16 @@ public class FriendsList extends JFrame{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	private void logout() {
+		try {
+			osw.write("Logout\r\n");
+			osw.flush();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		user.setOnlineStatus(Database.OFFLINE);
+		Database.closeConnection();
 	}
 }

@@ -21,7 +21,10 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class ChatWindow extends JFrame {
 	private static final long serialVersionUID = 5967819167561738505L;
@@ -31,7 +34,7 @@ public class ChatWindow extends JFrame {
 	private User targetUser;
 	private User originUser;
 	private Socket sock;
-	private SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss");
+	private SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss a");
 	/**
 	 * Create the frame.
 	 */
@@ -46,12 +49,6 @@ public class ChatWindow extends JFrame {
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		
-		txt_Receive = new JTextPane();
-		txt_Receive.setEditable(false);
-		
-		txt_Send = new JTextField();
-		txt_Send.setColumns(10);
 		JButton txt_Submit = new JButton("Submit");
 		txt_Submit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -60,31 +57,46 @@ public class ChatWindow extends JFrame {
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
-				.addComponent(txt_Receive, GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
+			gl_contentPane.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(txt_Send, GroupLayout.PREFERRED_SIZE, 344, GroupLayout.PREFERRED_SIZE)
+					.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(txt_Submit)
-					.addContainerGap(19, Short.MAX_VALUE))
-				.addGroup(gl_contentPane.createSequentialGroup()
-					.addGap(55)
-					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(377, Short.MAX_VALUE))
+					.addGap(14))
+				.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
 		);
 		gl_contentPane.setVerticalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
+			gl_contentPane.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(txt_Receive, GroupLayout.PREFERRED_SIZE, 194, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
-						.addComponent(txt_Send, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
-						.addComponent(txt_Submit)))
+					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 205, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addGroup(Alignment.TRAILING, gl_contentPane.createSequentialGroup()
+							.addComponent(txt_Submit)
+							.addGap(19))
+						.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)))
 		);
+		
+		txt_Send = new JTextField();
+		txt_Send.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+		        if (arg0.getKeyCode() == KeyEvent.VK_ENTER)
+		        {
+		          sendMessage();
+		        }
+			}
+		});
+		scrollPane_1.setViewportView(txt_Send);
+		txt_Send.setColumns(10);
+		
+		txt_Receive = new JTextPane();
+		scrollPane.setViewportView(txt_Receive);
+		txt_Receive.setEditable(false);
 		contentPane.setLayout(gl_contentPane);
 		/**
 		 * Removes chat window and chat session; this fixes the bug that would not spawn a new window if the targetUser closed
@@ -107,6 +119,8 @@ public class ChatWindow extends JFrame {
         OutputStream serverOutput = null;
         OutputStreamWriter osw = null;
 		try {
+			if (txt_Send.getText().equals("")) 
+				return;
 			serverOutput = sock.getOutputStream();
 	        osw = new OutputStreamWriter(serverOutput);
 	        	        
@@ -114,21 +128,25 @@ public class ChatWindow extends JFrame {
 	        osw.flush();
 	        MessageDAOImpl mDAO = new MessageDAOImpl();
 	        mDAO.insert(originUser.name, targetUser.name, txt_Send.getText());
-	        txt_Receive.setText(/*"[" + sdf.format(new Date()) + "]" +*/ txt_Receive.getText() + originUser.name + ": " + txt_Send.getText() + "\n");
+			String displayMessage = txt_Receive.getText() + "[" + sdf.format(new Date()) + "] " +  originUser.name + ": " + txt_Send.getText() + "\n";
+	        txt_Receive.setText(displayMessage);
 	        txt_Send.setText("");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	public synchronized void setMessages(ArrayList<Message> messages) {
+		String message = "";
 		for (Message m : messages) {
-	        txt_Receive.setText(/*"[" + sdf.format(new Date()) + "]" +*/ txt_Receive.getText() + m.getOriginUser() + ": " + m.getMessage() + "\n");
+			message += "[" + sdf.format(m.getTime()) + "] " + txt_Receive.getText() + m.getOriginUser() + ": " + m.getMessage() + "\n";
 		}
+        txt_Receive.setText(message);
 	}
 	public String getTargetUser() {
 		return targetUser.getUserName();
 	}
 	public void receiveMessage(String originUser, String message) {
-        txt_Receive.setText(/*"[" + sdf.format(new Date()) + "]" + */txt_Receive.getText() + originUser + ": " + message + "\n");
+		String displayMessage = txt_Receive.getText() + "[" + sdf.format(new Date()) + "] " +  originUser + ": " + message + "\n";
+        txt_Receive.setText(displayMessage);
 	}
 }

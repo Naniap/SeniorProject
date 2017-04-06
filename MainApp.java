@@ -13,6 +13,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.Timestamp;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class MainApp {
 	private JFrame frame;
@@ -63,6 +65,15 @@ public class MainApp {
 		txt_UName.setColumns(10);
 
 		txt_PWord = new JPasswordField();
+		txt_PWord.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+		        if (arg0.getKeyCode() == KeyEvent.VK_ENTER)
+		        {
+		          login();
+		        }
+			}
+		});
 		txt_PWord.setBounds(76, 76, 174, 20);
 		frame.getContentPane().add(txt_PWord);
 		txt_PWord.setColumns(10);
@@ -75,35 +86,7 @@ public class MainApp {
 		JButton btn_Login = new JButton("Login");
 		btn_Login.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (user != null) {
-					System.out.println("User " + user.getUserName() + " is already logged in.");
-					return;
-				}
-				UserDAOImpl UDAO = new UserDAOImpl();
-				user = UDAO.login(txt_UName.getText(), Database.sha512_Encrpyt(new String(txt_PWord.getPassword()),
-						new String(txt_PWord.getPassword()).substring(1)));
-				if (user != null) {
-					if (user.getOnlineStatus() == Database.ONLINE) {
-						System.out.println("User " + user.getUserName() + " is already logged in.");
-						return;
-					}
-					System.out.println("Successfully logged in as: " + user.getUserName());
-					try {
-						FriendsList f = new FriendsList(user);
-						f.setVisible(true);
-					}
-					catch (NullPointerException npe) {
-						System.out.println("Unable to connect to login server.");
-						JOptionPane.showMessageDialog(frame, "Unable to connect to the server.");
-						user = null;
-						return;
-					}
-					frame.dispose();
-					// Launch a new window logging the user in.
-				} else {
-					System.out.println("Invalid password or username...");
-					JOptionPane.showMessageDialog(frame, "Invalid password or username, please try again.");
-				}
+				login();
 			}
 		});
 		btn_Login.setBounds(66, 128, 89, 23);
@@ -119,5 +102,36 @@ public class MainApp {
 		});
 		btn_CreateAcct.setBounds(165, 128, 123, 23);
 		frame.getContentPane().add(btn_CreateAcct);
+	}
+	private void login() {
+		if (user != null) {
+			System.out.println("User " + user.getUserName() + " is already logged in.");
+			return;
+		}
+		UserDAOImpl UDAO = new UserDAOImpl();
+		user = UDAO.login(txt_UName.getText(), Database.sha512_Encrpyt(new String(txt_PWord.getPassword()),
+				new String(txt_PWord.getPassword()).substring(1)));
+		if (user != null) {
+			if (user.getOnlineStatus() == Database.ONLINE) {
+				System.out.println("User " + user.getUserName() + " is already logged in.");
+				return;
+			}
+			System.out.println("Successfully logged in as: " + user.getUserName());
+			try {
+				FriendsList f = new FriendsList(user);
+				f.setVisible(true);
+			}
+			catch (NullPointerException npe) {
+				System.out.println("Unable to connect to login server.");
+				JOptionPane.showMessageDialog(frame, "Unable to connect to the server.");
+				user = null;
+				return;
+			}
+			frame.dispose();
+			// Launch a new window logging the user in.
+		} else {
+			System.out.println("Invalid password or username...");
+			JOptionPane.showMessageDialog(frame, "Invalid password or username, please try again.");
+		}
 	}
 }
