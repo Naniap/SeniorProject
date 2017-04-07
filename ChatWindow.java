@@ -135,7 +135,7 @@ public class ChatWindow extends JFrame {
 			e.printStackTrace();
 		}
 	}
-	public synchronized void setMessages(ArrayList<Message> messages) {
+	public void setMessages(ArrayList<Message> messages) {
 		String message = "";
 		for (Message m : messages) {
 			message += "[" + sdf.format(m.getTime()) + "] " + txt_Receive.getText() + m.getOriginUser() + ": " + m.getMessage() + "\n";

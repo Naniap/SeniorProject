@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 import DAO.User;
@@ -90,21 +91,63 @@ public final class Database {
 		}
 		return generatedPassword;
 	}
+	/**
+	 * By default these users are mutual friends, even if the other friend hasn't "accepted"
+	 * @param currentUser
+	 * @return
+	 */
 	public static ArrayList<User> selectFriends(User currentUser) {
 		ArrayList<User> users = new ArrayList<>();
 		PreparedStatement pstmt;
 		Connection con = getConnection();
 		try {
-			pstmt = con.prepareStatement("SELECT username, onlinestatus, login.id FROM login INNER JOIN friendslist ON loginid WHERE friendid = ?");
+			pstmt = con.prepareStatement("SELECT username, onlinestatus, login.id, status FROM friendslist INNER JOIN login ON friendid = login.id WHERE loginid = ?");
 			pstmt.setInt(1, currentUser.getId());
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				users.add(new User(rs.getString(1), rs.getInt(2), rs.getInt(3)));
+				users.add(new User(rs.getString(1), rs.getInt(2), rs.getInt(3), rs.getInt(4)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return users;
-		
+	}
+	public static ArrayList<User> selectPendingFriends(User currentUser) {
+		ArrayList<User> users = new ArrayList<>();
+		PreparedStatement pstmt;
+		Connection con = getConnection();
+		try {
+			pstmt = con.prepareStatement("SELECT username, onlinestatus, login.id, status FROM friendslist t_out INNER JOIN login ON loginid = login.id WHERE friendid = ? AND NOT EXISTS (SELECT 1 FROM friendslist t_in WHERE t_in.friendid = t_out.loginid AND t_in.loginid = t_out.friendid)");
+			pstmt.setInt(1, currentUser.getId());
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				users.add(new User(rs.getString(1), rs.getInt(2), rs.getInt(3), rs.getInt(4)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return users;
+	}
+	public static void addFriend(int originId, int friendId) {
+		connection = Database.getConnection();
+		try {
+			PreparedStatement preparedStatement = connection.prepareStatement(
+					"INSERT INTO friendslist (loginid, friendid) VALUES (?, ?)");
+			preparedStatement.setInt(1, originId);
+			preparedStatement.setInt(2, friendId);
+			preparedStatement.executeUpdate();
+			preparedStatement.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 }
+
+/*
+ * 
+ *	  loginid: 3					 friendid: 1 
+ *     (TestTwo)   is friends with 	   (Mike)
+ *    friendid: 1   is friends with   loginid: 3
+ *      (Mike)							(TestTwo)
+ *      Mike is friends with Test and Mike (1 and 2)
+*/

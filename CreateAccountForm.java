@@ -1,6 +1,9 @@
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -70,6 +73,11 @@ public class CreateAccountForm extends JFrame {
 		JButton btn_Submit = new JButton("Submit");
 		btn_Submit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (!txt_User.getText().matches("\\w{1,20}")) {
+					JOptionPane.showMessageDialog(null, "Invalid username, username can only contain letters and numbers and have a maximum length of 20.");
+					txt_User.grabFocus();
+					return;
+				}
 				if (!Arrays.equals(txt_Confirm.getPassword(), txt_Pass.getPassword())) {
 					JOptionPane.showMessageDialog(null, "Passwords are not the same, please re-enter.",
 							"Password Verification Error", JOptionPane.ERROR_MESSAGE);

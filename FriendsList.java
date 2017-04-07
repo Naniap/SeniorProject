@@ -46,12 +46,14 @@ public class FriendsList extends JFrame{
 	private FriendsList friendsList;
 	private Socket socket;
 	private ArrayList<User> friends;
+	private ArrayList<User> pendingFriends;
 	private DefaultTableModel dtm;
 	private Thread inputThread;
 	private OutputStreamWriter osw;
 	private User user;
 	private JFrame frame;
 	private UserDAOImpl uDAO;
+	private int pendingIndex;
 
 	/**
 	 * Create the frame.
@@ -113,13 +115,19 @@ public class FriendsList extends JFrame{
 				if (targetFriend == null)
 					JOptionPane.showMessageDialog(frame, "That user does not exist!");
 				else {
+					if (friends.size() == 0) {
+						Database.addFriend(user.getId(), targetFriend.getId());
+						updateList();
+						return;
+					}
 					for (User u : friends) {
-						if (u.getUserName().equals(targetFriend.getUserName()))
+						if (u.getUserName().equals(targetFriend.getUserName())) {
 							JOptionPane.showMessageDialog(frame, "You are already friends with that person!");
-						else {
-							//TODO: add friend
+							return;
 						}
 					}
+					Database.addFriend(user.getId(), targetFriend.getId());
+					updateList();
 				}
 			}
 		});
@@ -145,14 +153,34 @@ public class FriendsList extends JFrame{
 			}
 		};
 		table.addMouseListener(new MouseAdapter() {
+			//TODO: Make sure the user accepting the friend request is the person who received it.
 		    public void mousePressed(MouseEvent me) {
+		    	boolean foundUser = false;
 		        JTable table =(JTable) me.getSource();
 		        Point p = me.getPoint();
 		        int row = table.rowAtPoint(p);
+		        if(me.getButton() == MouseEvent.BUTTON3) {
+		        	System.out.println("Right click!");
+		        	Object o = table.getModel().getValueAt(row, 0);
+		            User targetUser = uDAO.select(o.toString());
+		            if (targetUser == null) //sanity check if user clicks on an invalid user
+		            	return;
+		        	if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(frame, "Would you like to add this user as a friend?", "Add user?", JOptionPane.OK_CANCEL_OPTION)) {
+		        		//TODO: Update row in database
+		        	}
+		        }
 		        if (me.getClickCount() == 2) {
 		        	Object o = table.getModel().getValueAt(row, 0);
 		            User targetUser = uDAO.select(o.toString());
-		            if (targetUser == null)
+		            if (targetUser == null) //sanity check if user clicks on an invalid user
+		            	return;
+		            for (User u : friends) {
+			            if (u.getUserName().equals(targetUser.getUserName()) && u.getStatus() == 1) {
+			            	foundUser = true;
+			            	break;
+			            }
+		            }
+		            if (!foundUser)
 		            	return;
 		            if (chatSessions.contains(targetUser.getUserName())) {
 		            	if (DEBUG)
@@ -270,24 +298,42 @@ public class FriendsList extends JFrame{
 	}
 	public void updateList() {
 		friends = Database.selectFriends(user);
+		pendingFriends = Database.selectPendingFriends(user);
 		int rowCount = dtm.getRowCount();
 		for (int i = rowCount - 1; i >= 0; i--) {
 		    dtm.removeRow(i);
 		}
 		for (User u : friends) {
-			if (u.getOnlineStatus() <= Database.AWAY) // user is AWAY or ONLINE
+			if (u.getOnlineStatus() <= Database.AWAY && u.getStatus() != 0) // user is AWAY or ONLINE
 														// are the only ways to
 														// see if the user is
 														// online
 				dtm.addRow(new Object[] { u.getUserName() });
+			else {
+				if (!pendingFriends.contains(u))
+					pendingFriends.add(u);
+			}
 		}
 		dtm.addRow(new Object[] { "----------------------------" });
 		dtm.addRow(new Object[] { "Offline Friends" });
 		dtm.addRow(new Object[] { "----------------------------" });
 		for (User u : friends) {
 			if (u.getOnlineStatus() > Database.AWAY) {
-				dtm.addRow(new Object[] { u.getUserName() });
+				if (u.getStatus() != 0)
+					dtm.addRow(new Object[] { u.getUserName() });
+				else {
+					if (!pendingFriends.contains(u))
+						pendingFriends.add(u);
+				}
 			}
+		}
+		dtm.addRow(new Object[] { "----------------------------" });
+		dtm.addRow(new Object[] { "Pending Friends" });
+		pendingIndex = dtm.getRowCount();
+		dtm.addRow(new Object[] { "----------------------------" });
+		for (User u : pendingFriends) {
+			if (u.getStatus() == 0)
+				dtm.addRow(new Object[] { u.getUserName() });
 		}
 		table.setModel(dtm);
 	}

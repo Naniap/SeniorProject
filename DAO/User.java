@@ -14,6 +14,7 @@ public class User implements Serializable {
 	private String email;
 	private int onlineStatus;
 	private ArrayList<User> friends;
+	private int status; //whether or not user has accepted as friend, 0 = no, 1 = yes
 
 	public User(int id, String name, String password, String email, Timestamp lastLogin, int onlineStatus) {
 		this.id = id;
@@ -24,10 +25,11 @@ public class User implements Serializable {
 		this.setOnlineStatus(onlineStatus);
 	}
 
-	public User(String friendName, int onlineStatus, int id) {
+	public User(String friendName, int onlineStatus, int id, int status) {
 		this.name = friendName;
 		this.onlineStatus = onlineStatus;
 		this.id = id;
+		this.status = status;
 	}
 
 	public User(String name, String password, String email) {
@@ -86,6 +88,14 @@ public class User implements Serializable {
 	public void setOnlineStatus(int onlineStatus) {
 		this.onlineStatus = onlineStatus;
 		uDAO.update(this, lastLogin, false);
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 }
