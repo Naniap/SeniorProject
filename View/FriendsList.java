@@ -1,3 +1,4 @@
+package View;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -120,12 +121,10 @@ public class FriendsList extends JFrame{
 						updateList();
 						return;
 					}
-					for (User u : friends) {
-						if (u.getUserName().equals(targetFriend.getUserName())) {
-							JOptionPane.showMessageDialog(frame, "You are already friends with that person!");
-							return;
-						}
-					}
+		            if (checkFriendAlready(friends, targetFriend)) {
+						JOptionPane.showMessageDialog(frame, "You are already friends with that person!");
+		            	return;
+		            }
 					Database.addFriend(user.getId(), targetFriend.getId());
 					updateList();
 				}
@@ -153,22 +152,21 @@ public class FriendsList extends JFrame{
 			}
 		};
 		table.addMouseListener(new MouseAdapter() {
-			//TODO: Make sure the user accepting the friend request is the person who received it.
 		    public void mousePressed(MouseEvent me) {
 		    	boolean foundUser = false;
 		        JTable table =(JTable) me.getSource();
 		        Point p = me.getPoint();
 		        int row = table.rowAtPoint(p);
 		        if(me.getButton() == MouseEvent.BUTTON3) {
-		        	System.out.println("Right click!");
 		        	Object o = table.getModel().getValueAt(row, 0);
 		            User targetUser = uDAO.select(o.toString());
 		            if (targetUser == null) //sanity check if user clicks on an invalid user
 		            	return;
+		            if (checkFriendAlready(friends, targetUser))
+		            	return;
 		        	if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(frame, "Would you like to add this user as a friend?", "Add user?", JOptionPane.OK_CANCEL_OPTION)) {
-		        		//TODO: Update row in database
 		        		uDAO.acceptRequest(user.getId(), targetUser.getId());
-		        		uDAO.insert(user);
+		        		updateList();
 		        	}
 		        }
 		        if (me.getClickCount() == 2) {
@@ -176,13 +174,7 @@ public class FriendsList extends JFrame{
 		            User targetUser = uDAO.select(o.toString());
 		            if (targetUser == null) //sanity check if user clicks on an invalid user
 		            	return;
-		            for (User u : friends) {
-			            if (u.getUserName().equals(targetUser.getUserName()) && u.getStatus() == 1) {
-			            	foundUser = true;
-			            	break;
-			            }
-		            }
-		            if (!foundUser)
+		            if (checkFriendAlready(friends, targetUser))
 		            	return;
 		            if (chatSessions.contains(targetUser.getUserName())) {
 		            	if (DEBUG)
@@ -311,10 +303,10 @@ public class FriendsList extends JFrame{
 														// see if the user is
 														// online
 				dtm.addRow(new Object[] { u.getUserName() });
-			else {
-				if (!pendingFriends.contains(u))
-					pendingFriends.add(u);
-			}
+			//else {
+			//	if (!pendingFriends.contains(u))
+			//		pendingFriends.add(u);
+			//}
 		}
 		dtm.addRow(new Object[] { "----------------------------" });
 		dtm.addRow(new Object[] { "Offline Friends" });
@@ -323,10 +315,10 @@ public class FriendsList extends JFrame{
 			if (u.getOnlineStatus() > Database.AWAY) {
 				if (u.getStatus() != 0)
 					dtm.addRow(new Object[] { u.getUserName() });
-				else {
-					if (!pendingFriends.contains(u))
-						pendingFriends.add(u);
-				}
+				//else {
+					//if (!pendingFriends.contains(u))
+						//pendingFriends.add(u);
+				//}
 			}
 		}
 		dtm.addRow(new Object[] { "----------------------------" });
@@ -358,5 +350,15 @@ public class FriendsList extends JFrame{
 		}
 		user.setOnlineStatus(Database.OFFLINE);
 		Database.closeConnection();
+	}
+	private boolean checkFriendAlready(ArrayList<User> friends, User targetUser) {
+		boolean foundUser = false;
+        for (User u : friends) {
+            if (u.getUserName().equals(targetUser.getUserName()) && u.getStatus() == 1) {
+            	foundUser = true;
+            	break;
+            }
+        }
+        return foundUser;
 	}
 }
