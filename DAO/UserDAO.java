@@ -13,4 +13,6 @@ public interface UserDAO {
 	public ArrayList<User> selectAll();
 	
 	public User select(String user); // usernames are unique, so we can use them as a primary key of sorts.
+	
+	public void acceptRequest(int originUser, int targetUser);
 }

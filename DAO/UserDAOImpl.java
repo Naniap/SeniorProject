@@ -127,4 +127,22 @@ public class UserDAOImpl implements UserDAO, Serializable {
 		return null;
 	}
 
+	@Override
+	public void acceptRequest(int originUser, int targetUser) {
+		connection = Database.getConnection();
+		try {
+				PreparedStatement pstmt = connection.prepareStatement("UPDATE friendslist SET status = 1 WHERE friendid = ? AND loginid = ?");
+				pstmt.setInt(1, originUser);
+				pstmt.setInt(2, targetUser);
+				pstmt.executeUpdate();
+				pstmt = connection.prepareStatement("INSERT INTO friendslist (loginid, friendid, status) VALUES (?, ?, ?)");
+				pstmt.setInt(1, originUser);
+				pstmt.setInt(2, targetUser);
+				pstmt.setInt(3, 1);
+				pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println(e);
+		}
+	}
+
 }

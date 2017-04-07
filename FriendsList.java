@@ -167,6 +167,8 @@ public class FriendsList extends JFrame{
 		            	return;
 		        	if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(frame, "Would you like to add this user as a friend?", "Add user?", JOptionPane.OK_CANCEL_OPTION)) {
 		        		//TODO: Update row in database
+		        		uDAO.acceptRequest(user.getId(), targetUser.getId());
+		        		uDAO.insert(user);
 		        	}
 		        }
 		        if (me.getClickCount() == 2) {
