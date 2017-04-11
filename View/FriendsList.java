@@ -54,7 +54,6 @@ public class FriendsList extends JFrame{
 	private User user;
 	private JFrame frame;
 	private UserDAOImpl uDAO;
-	private int pendingIndex;
 
 	/**
 	 * Create the frame.
@@ -117,6 +116,7 @@ public class FriendsList extends JFrame{
 					JOptionPane.showMessageDialog(frame, "That user does not exist!");
 				else {
 					if (friends.size() == 0) {
+						JOptionPane.showMessageDialog(frame, "You have sent a friend request to " + targetFriend.getUserName() + ". When they accept you will see them as online.");
 						Database.addFriend(user.getId(), targetFriend.getId());
 						updateList();
 						return;
@@ -125,6 +125,7 @@ public class FriendsList extends JFrame{
 						JOptionPane.showMessageDialog(frame, "You are already friends with that person!");
 		            	return;
 		            }
+					JOptionPane.showMessageDialog(frame, "You have sent a friend request to " + targetFriend.getUserName() + ". When they accept you will see them as online.");
 					Database.addFriend(user.getId(), targetFriend.getId());
 					updateList();
 				}
@@ -174,7 +175,7 @@ public class FriendsList extends JFrame{
 		            User targetUser = uDAO.select(o.toString());
 		            if (targetUser == null) //sanity check if user clicks on an invalid user
 		            	return;
-		            if (checkFriendAlready(friends, targetUser))
+		            if (!checkFriendAlready(friends, targetUser))
 		            	return;
 		            if (chatSessions.contains(targetUser.getUserName())) {
 		            	if (DEBUG)
@@ -297,34 +298,22 @@ public class FriendsList extends JFrame{
 		for (int i = rowCount - 1; i >= 0; i--) {
 		    dtm.removeRow(i);
 		}
+		dtm.addRow(new Object[] { "Online Friends" });
 		for (User u : friends) {
 			if (u.getOnlineStatus() <= Database.AWAY && u.getStatus() != 0) // user is AWAY or ONLINE
 														// are the only ways to
 														// see if the user is
 														// online
 				dtm.addRow(new Object[] { u.getUserName() });
-			//else {
-			//	if (!pendingFriends.contains(u))
-			//		pendingFriends.add(u);
-			//}
 		}
-		dtm.addRow(new Object[] { "----------------------------" });
 		dtm.addRow(new Object[] { "Offline Friends" });
-		dtm.addRow(new Object[] { "----------------------------" });
 		for (User u : friends) {
 			if (u.getOnlineStatus() > Database.AWAY) {
 				if (u.getStatus() != 0)
 					dtm.addRow(new Object[] { u.getUserName() });
-				//else {
-					//if (!pendingFriends.contains(u))
-						//pendingFriends.add(u);
-				//}
 			}
 		}
-		dtm.addRow(new Object[] { "----------------------------" });
 		dtm.addRow(new Object[] { "Pending Friends" });
-		pendingIndex = dtm.getRowCount();
-		dtm.addRow(new Object[] { "----------------------------" });
 		for (User u : pendingFriends) {
 			if (u.getStatus() == 0)
 				dtm.addRow(new Object[] { u.getUserName() });

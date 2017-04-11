@@ -111,7 +111,7 @@ public class MainApp {
 		}
 		UserDAOImpl UDAO = new UserDAOImpl();
 		user = UDAO.login(txt_UName.getText(), Database.sha512_Encrpyt(new String(txt_PWord.getPassword()),
-				new String(txt_PWord.getPassword()).substring(1)));
+				new String(txt_UName.getText()).substring(1)));
 		if (user != null) {
 			if (user.getOnlineStatus() == Database.ONLINE) {
 				System.out.println("User " + user.getUserName() + " is already logged in.");

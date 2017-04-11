@@ -27,12 +27,13 @@ public class CreateAccountForm extends JFrame {
 	private JPasswordField txt_Confirm;
 	private JFrame parent;
 	private JPasswordField txt_Pass;
-
+	private JFrame frame;
 	/**
 	 * Create the frame.
 	 */
 	public CreateAccountForm(JFrame parent) {
 		this.parent = parent;
+		frame = this;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 402, 251);
 		contentPane = new JPanel();
@@ -85,7 +86,10 @@ public class CreateAccountForm extends JFrame {
 				} else {
 					UserDAOImpl UDAO = new UserDAOImpl();
 					UDAO.insert(new User(txt_User.getText(), Database.sha512_Encrpyt(new String(txt_Pass.getPassword()),
-							new String(txt_Pass.getPassword()).substring(1)), txt_Email.getText()));
+							new String(txt_User.getText()).substring(1)), txt_Email.getText()));
+					JOptionPane.showMessageDialog(null, "Your account has been successfully created.");
+					frame.setVisible(false);
+					parent.setVisible(true);
 				}
 			}
 		});
@@ -99,7 +103,7 @@ public class CreateAccountForm extends JFrame {
 
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				contentPane.setVisible(false);
+				frame.setVisible(false);
 				parent.setVisible(true);
 			}
 		});
