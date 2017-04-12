@@ -118,7 +118,7 @@ public class FriendsList extends JFrame{
 					if (friends.size() == 0) {
 						JOptionPane.showMessageDialog(frame, "You have sent a friend request to " + targetFriend.getUserName() + ". When they accept you will see them as online.");
 						Database.addFriend(user.getId(), targetFriend.getId());
-						updateList();
+						updateUsers(user, targetFriend);
 						return;
 					}
 		            if (checkFriendAlready(friends, targetFriend)) {
@@ -127,7 +127,7 @@ public class FriendsList extends JFrame{
 		            }
 					JOptionPane.showMessageDialog(frame, "You have sent a friend request to " + targetFriend.getUserName() + ". When they accept you will see them as online.");
 					Database.addFriend(user.getId(), targetFriend.getId());
-					updateList();
+					updateUsers(user, targetFriend);
 				}
 			}
 		});
@@ -167,7 +167,7 @@ public class FriendsList extends JFrame{
 		            	return;
 		        	if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(frame, "Would you like to add this user as a friend?", "Add user?", JOptionPane.OK_CANCEL_OPTION)) {
 		        		uDAO.acceptRequest(user.getId(), targetUser.getId());
-		        		updateList();
+						updateUsers(user, targetUser);
 		        	}
 		        }
 		        if (me.getClickCount() == 2) {
@@ -349,5 +349,14 @@ public class FriendsList extends JFrame{
             }
         }
         return foundUser;
+	}
+	private void updateUsers(User user, User targetFriend) {
+		try {
+			osw.write("UPDATE USERS: " + user.getUserName() + "," + targetFriend.getUserName() + "\r\n");
+			osw.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

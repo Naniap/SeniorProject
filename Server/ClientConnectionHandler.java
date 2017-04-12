@@ -132,6 +132,15 @@ public class ClientConnectionHandler extends Thread {
 				for (ClientConnectionHandler c : ChatServer.getConnections())
 					c.forceRefresh();
 			}
+			if (option.contains("UPDATE USERS: ")) {
+				String originUser = option.split("UPDATE USERS: ")[1].split(",")[0].trim();
+				String targetUser = option.split(",")[1].trim();
+				for (ClientConnectionHandler c : ChatServer.getConnections()) {
+					if (c.getUserName().equals(originUser) || c.getUserName().equals(targetUser)) {
+						c.forceRefresh();
+					}
+				}
+			}
 		}
 
 	}
