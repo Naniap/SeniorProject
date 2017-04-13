@@ -35,7 +35,7 @@ public class MessageDAOImpl implements MessageDAO {
 		try {
 			ArrayList<Message> messages = new ArrayList<>();
 			PreparedStatement pstmt = connection
-					.prepareStatement("SELECT id, originUser, destinationUser, message, time FROM messages WHERE (originUser = ? AND destinationUser = ?) OR (originUser = ? AND destinationUser = ?) ORDER BY id ASC LIMIT 30");
+					.prepareStatement("SELECT * FROM (	SELECT id, originUser, destinationUser, message, time FROM messages WHERE (originUser = ? AND destinationUser = ?) OR (originUser = ? AND destinationUser = ?) ORDER BY id DESC LIMIT 30) sub ORDER BY id ASC");
 			pstmt.setString(1, originUser);
 			pstmt.setString(2, destUser);
 			pstmt.setString(3, destUser);
