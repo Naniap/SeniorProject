@@ -1,6 +1,7 @@
 package View;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
@@ -36,6 +37,7 @@ public class ChatWindow extends JFrame {
 	private User originUser;
 	private Socket sock;
 	private SimpleDateFormat sdf = new SimpleDateFormat("h:mm:ss a");
+	private JScrollPane scrollPane_1;
 	/**
 	 * Create the frame.
 	 */
@@ -59,7 +61,7 @@ public class ChatWindow extends JFrame {
 		
 		JScrollPane scrollPane = new JScrollPane();
 		
-		JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1 = new JScrollPane();
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.TRAILING)
@@ -81,7 +83,6 @@ public class ChatWindow extends JFrame {
 							.addGap(19))
 						.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)))
 		);
-		
 		txt_Send = new JTextField();
 		txt_Send.addKeyListener(new KeyAdapter() {
 			@Override
@@ -128,10 +129,11 @@ public class ChatWindow extends JFrame {
 	        osw.write("Chat message: " + originUser.name + "," + targetUser.name + "," + txt_Send.getText() + "\r\n");
 	        osw.flush();
 	        MessageDAOImpl mDAO = new MessageDAOImpl();
-	        mDAO.insert(originUser.name, targetUser.name, txt_Send.getText());
+	        mDAO.insert(originUser.getId(), targetUser.getId(), txt_Send.getText());
 			String displayMessage = txt_Receive.getText() + "[" + sdf.format(new Date()) + "] " +  originUser.name + ": " + txt_Send.getText() + "\n";
 	        txt_Receive.setText(displayMessage);
 	        txt_Send.setText("");
+	        updateScrollPosition();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -142,6 +144,7 @@ public class ChatWindow extends JFrame {
 			message += "[" + sdf.format(m.getTime()) + "] " + txt_Receive.getText() + m.getOriginUser() + ": " + m.getMessage() + "\n";
 		}
         txt_Receive.setText(message);
+        updateScrollPosition();
 	}
 	public String getTargetUser() {
 		return targetUser.getUserName();
@@ -149,5 +152,10 @@ public class ChatWindow extends JFrame {
 	public void receiveMessage(String originUser, String message) {
 		String displayMessage = txt_Receive.getText() + "[" + sdf.format(new Date()) + "] " +  originUser + ": " + message + "\n";
         txt_Receive.setText(displayMessage);
+        updateScrollPosition();
+	}
+	public void updateScrollPosition() {
+		JScrollBar vertical = scrollPane_1.getVerticalScrollBar();
+		vertical.setValue( vertical.getMaximum() );
 	}
 }

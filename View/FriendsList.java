@@ -187,7 +187,7 @@ public class FriendsList extends JFrame{
 		            ChatWindow chatSession = new ChatWindow(socket, user, targetUser, friendsList);
 		            if (chatSession != null) {
 		            	MessageDAOImpl mDAO = new MessageDAOImpl();
-		            	ArrayList<Message> messages = mDAO.retrieveMessages(user.name, targetUser.name);
+		            	ArrayList<Message> messages = mDAO.retrieveMessages(user.getId(), targetUser.getId());
 		            	if (messages != null) 
 		            		chatSession.setMessages(messages);
 		            	chatSessions.add(targetUser.getUserName());
@@ -273,7 +273,7 @@ public class FriendsList extends JFrame{
 				            	chatSessions.add(targetUser.getUserName());
 				            	chatWindows.add(chatSession);
 				            	MessageDAOImpl mDAO = new MessageDAOImpl();
-				            	ArrayList<Message> messages = mDAO.retrieveMessages(user.name, targetUser.name);
+				            	ArrayList<Message> messages = mDAO.retrieveMessages(user.getId(), targetUser.getId());
 				            	if (messages != null) 
 				            		chatSession.setMessages(messages);
 				            	chatSession.setVisible(true);

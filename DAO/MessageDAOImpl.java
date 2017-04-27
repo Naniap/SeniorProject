@@ -12,13 +12,13 @@ import Database.Database;
 public class MessageDAOImpl implements MessageDAO {
 	Connection connection = null;
 	@Override
-	public void insert(String originUser, String destUser, String message) {
+	public void insert(Integer loginId, Integer friendId, String message) {
 		connection = Database.getConnection();
 		try {
 			PreparedStatement preparedStatement = connection.prepareStatement(
-					"INSERT INTO messages (originUser, destinationUser, message, time) VALUES (?, ?, ?, ?)");
-			preparedStatement.setString(1, originUser);
-			preparedStatement.setString(2, destUser);
+					"INSERT INTO messages (loginid, friendid, message, time) VALUES (?, ?, ?, ?)");
+			preparedStatement.setInt(1, loginId);
+			preparedStatement.setInt(2, friendId);
 			preparedStatement.setString(3, message);
 			preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
 			preparedStatement.executeUpdate();
@@ -30,21 +30,42 @@ public class MessageDAOImpl implements MessageDAO {
 	}
 
 	@Override
-	public ArrayList<Message> retrieveMessages(String originUser, String destUser) {
+	public ArrayList<Message> retrieveMessages(Integer loginId, Integer friendId) {
 		connection = Database.getConnection();
 		try {
+			String query = "SELECT" 
+				   + " *"
+				   + " FROM"
+				   +     " ( SELECT " 
+				   +         "messages.id,"
+				   +             "loginid,"
+				   +             "friendid,"
+				   +             "message,"
+				   +             "time,"
+				   +             "targUser.username AS targUser,"
+				   +             "origUser.username AS origUser "
+				   +     "FROM "
+				   +         "messages "
+				   +     "INNER JOIN login origUser ON loginid = origUser.id "
+				   +     "INNER JOIN login targUser ON friendid = targUser.id "
+				   +     "WHERE "
+				   +         "(loginid = ? AND friendid = ?) "
+				   +             "OR (friendid = ? AND loginid = ?) "
+				   +     "ORDER BY id DESC "
+				   +     "LIMIT 30) sub "
+				   + "ORDER BY id ASC";
 			ArrayList<Message> messages = new ArrayList<>();
 			PreparedStatement pstmt = connection
-					.prepareStatement("SELECT * FROM (	SELECT id, originUser, destinationUser, message, time FROM messages WHERE (originUser = ? AND destinationUser = ?) OR (originUser = ? AND destinationUser = ?) ORDER BY id DESC LIMIT 30) sub ORDER BY id ASC");
-			pstmt.setString(1, originUser);
-			pstmt.setString(2, destUser);
-			pstmt.setString(3, destUser);
-			pstmt.setString(4, originUser);
+					.prepareStatement(query);
+			pstmt.setInt(1, loginId);
+			pstmt.setInt(2, friendId);
+			pstmt.setInt(3, loginId);
+			pstmt.setInt(4, friendId);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				int id = rs.getInt(1);
-				String originName = rs.getString(2);
-				String destName = rs.getString(3);
+				String originName = rs.getString(7);
+				String destName = rs.getString(6);
 				String message = rs.getString(4);
 				Timestamp time = rs.getTimestamp(5);
 				Message m = new Message(id, originName, destName, message, time);
