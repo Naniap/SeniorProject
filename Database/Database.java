@@ -7,7 +7,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 
 import DAO.User;
@@ -142,12 +141,3 @@ public final class Database {
 		}
 	}
 }
-
-/*
- * 
- *	  loginid: 3					 friendid: 1 
- *     (TestTwo)   is friends with 	   (Mike)
- *    friendid: 1   is friends with   loginid: 3
- *      (Mike)							(TestTwo)
- *      Mike is friends with Test and Mike (1 and 2)
-*/

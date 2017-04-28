@@ -154,7 +154,6 @@ public class FriendsList extends JFrame{
 		};
 		table.addMouseListener(new MouseAdapter() {
 		    public void mousePressed(MouseEvent me) {
-		    	boolean foundUser = false;
 		        JTable table =(JTable) me.getSource();
 		        Point p = me.getPoint();
 		        int row = table.rowAtPoint(p);
@@ -249,7 +248,7 @@ public class FriendsList extends JFrame{
 					if (message.equalsIgnoreCase("Force Refresh")) {
 						updateList();
 					}
-					if (message.contains("What is your username?")) {
+					if (message.startsWith("What is your username?")) {
 						userName();
 					}
 					if (message.contains("Message from: ")) {

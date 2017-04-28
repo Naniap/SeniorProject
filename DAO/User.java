@@ -13,7 +13,6 @@ public class User implements Serializable {
 	private String password;
 	private String email;
 	private int onlineStatus;
-	private ArrayList<User> friends;
 	private int status; //whether or not user has accepted as friend, 0 = no, 1 = yes
 
 	public User(int id, String name, String password, String email, Timestamp lastLogin, int onlineStatus) {

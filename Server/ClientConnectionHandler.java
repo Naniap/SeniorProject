@@ -2,98 +2,36 @@ package Server;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.sql.DriverManager;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import com.mysql.jdbc.Messages;
-
-import DAO.User;
-import DAO.UserDAOImpl;
-
-// TODO this class is a stub; Dan said he had a cch written so this is the placeholder.
-// for my BBServer to work we need these 3 methods (including the constructor)
 
 public class ClientConnectionHandler extends Thread {
-
-	private User newUser;
 	private String userName;
-
-	public boolean hasMessage;
-	public boolean hasNewUser;
-	public boolean hasLogout;
-
-	private User currentUser;
-	private User tempUser;
-	private User userToLogOut;
-	private boolean isLoggedIn;
-
-	private ArrayList<User> loggedInUserList;
 
 	private Socket connection;
 	private InputStream clientInput;
 	private OutputStream clientOutput;
 	private Scanner scanner;
 	private OutputStreamWriter osw;
-	private ObjectOutputStream oos;
-	private ObjectInputStream ois;
 	private String option = "";
 
 	public ClientConnectionHandler() {
 	}
 
-	public ClientConnectionHandler(Socket clientConnection, ArrayList<User> uL,	ArrayList<User> lIU) {
+	public ClientConnectionHandler(Socket clientConnection) {
 		connection = clientConnection;
-		this.loggedInUserList = lIU;
-		this.currentUser = null;
-
-		this.hasMessage = false;
-		this.isLoggedIn = false;
-		this.hasNewUser = false;
-
 		try {
 			clientInput = connection.getInputStream();
 			clientOutput = connection.getOutputStream();
 			scanner = new Scanner(clientInput);
 			osw = new OutputStreamWriter(clientOutput);
-			oos = getObjectOutputStream();
 		} catch (IOException e) {
 			System.out.println("Error reading/writing from/to client");
 		}
 
-	}
-
-	public ObjectInputStream getObjectInputStream() {
-		if (ois == null) {
-			try {
-				ois = new ObjectInputStream(connection.getInputStream());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return ois;
-	}
-
-	public ObjectOutputStream getObjectOutputStream() {
-		if (oos == null) {
-			try {
-				oos = new ObjectOutputStream(connection.getOutputStream());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		return oos;
 	}
 
 	@Override

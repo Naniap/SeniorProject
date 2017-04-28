@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import DAO.User;
 
 public class ChatServer {
 
 	private ServerSocket server;
 	private Socket clientConnection;
 	private static ArrayList<ClientConnectionHandler> connections;
-	private ArrayList<User> users;
-	private ArrayList<User> loggedInUsers;
 
 
 	private int portNumber;
@@ -22,7 +19,6 @@ public class ChatServer {
 		clientConnection = null;
 		this.portNumber = 5000;
 		connections = new ArrayList<ClientConnectionHandler>();
-		loggedInUsers = new ArrayList<User>();
 	}
 
 	public void listen() throws IOException {
@@ -42,7 +38,7 @@ public class ChatServer {
 	 */
 	public void acceptConnection() throws IOException {
 		clientConnection = server.accept();
-		ClientConnectionHandler cch = new ClientConnectionHandler(clientConnection, this.users, this.loggedInUsers);
+		ClientConnectionHandler cch = new ClientConnectionHandler(clientConnection);
 		connections.add(cch);
 		cch.start();
 		System.out.println("User accepted.");
@@ -60,24 +56,23 @@ public class ChatServer {
 	}
 
 	public static void main(String[] args) {
-		// BBServer BBS = new BBServer(Integer.parseInt(args[0]));
-		ChatServer BBS = new ChatServer();
+		ChatServer CS = new ChatServer();
 		System.out.println("Message Server Initialized");
 
 		try {
 			// Make the server listen on the given port
-			BBS.listen();
+			CS.listen();
 
 			while (true) {
 				// Wait until a client connects
-				BBS.acceptConnection();
+				CS.acceptConnection();
 			}
 
 		} catch (IOException e) {
 
 			System.out.println("Unable to connect");
 		} finally {
-			BBS.terminate();
+			CS.terminate();
 		}
 
 	}

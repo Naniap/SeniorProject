@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.Timestamp;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -113,10 +112,10 @@ public class MainApp {
 		user = UDAO.login(txt_UName.getText(), Database.sha512_Encrpyt(new String(txt_PWord.getPassword()),
 				new String(txt_UName.getText()).substring(1)));
 		if (user != null) {
-			if (user.getOnlineStatus() == Database.ONLINE) {
+			/*if (user.getOnlineStatus() == Database.ONLINE) {
 				System.out.println("User " + user.getUserName() + " is already logged in.");
 				return;
-			}
+			}*/
 			System.out.println("Successfully logged in as: " + user.getUserName());
 			try {
 				FriendsList f = new FriendsList(user);

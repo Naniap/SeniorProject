@@ -2,9 +2,6 @@ package View;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -21,18 +18,17 @@ import java.awt.event.ActionEvent;
 
 public class CreateAccountForm extends JFrame {
 
+	private static final long serialVersionUID = 7997339360411526729L;
 	private JPanel contentPane;
 	private JTextField txt_User;
 	private JTextField txt_Email;
 	private JPasswordField txt_Confirm;
-	private JFrame parent;
 	private JPasswordField txt_Pass;
 	private JFrame frame;
 	/**
 	 * Create the frame.
 	 */
 	public CreateAccountForm(JFrame parent) {
-		this.parent = parent;
 		frame = this;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 402, 251);
