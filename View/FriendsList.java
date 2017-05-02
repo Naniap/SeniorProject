@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 import java.awt.event.ItemEvent;
+import java.awt.BorderLayout;
 
 public class FriendsList extends JFrame{
 	private static final long serialVersionUID = -2401808601296366940L;
@@ -132,73 +133,8 @@ public class FriendsList extends JFrame{
 			}
 		});
 		mnSettings.add(mntmAddFriend);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
-
-		table = new JTable();
-		table.setBounds(0, 87, 264, 472);
-		contentPane.add(table);
-		friends = Database.selectFriends(user);
-		dtm = new DefaultTableModel(0, 0) {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1109174466769474675L;
-
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
-		};
-		table.addMouseListener(new MouseAdapter() {
-		    public void mousePressed(MouseEvent me) {
-		        JTable table =(JTable) me.getSource();
-		        Point p = me.getPoint();
-		        int row = table.rowAtPoint(p);
-		        if(me.getButton() == MouseEvent.BUTTON3) {
-		        	Object o = table.getModel().getValueAt(row, 0);
-		            User targetUser = uDAO.select(o.toString());
-		            if (targetUser == null) //sanity check if user clicks on an invalid user
-		            	return;
-		            if (checkFriendAlready(friends, targetUser))
-		            	return;
-		        	if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(frame, "Would you like to add this user as a friend?", "Add user?", JOptionPane.OK_CANCEL_OPTION)) {
-		        		uDAO.acceptRequest(user.getId(), targetUser.getId());
-						updateUsers(user, targetUser);
-		        	}
-		        }
-		        if (me.getClickCount() == 2) {
-		        	Object o = table.getModel().getValueAt(row, 0);
-		            User targetUser = uDAO.select(o.toString());
-		            if (targetUser == null) //sanity check if user clicks on an invalid user
-		            	return;
-		            if (!checkFriendAlready(friends, targetUser))
-		            	return;
-		            if (chatSessions.contains(targetUser.getUserName())) {
-		            	if (DEBUG)
-		            		System.out.println("[" + sdf.format(new Date()) + "] " + "User already has chat window open.");
-		            	return;
-		            }
-		            if (socket == null)
-		            	return;
-		            ChatWindow chatSession = new ChatWindow(socket, user, targetUser, friendsList);
-		            if (chatSession != null) {
-		            	MessageDAOImpl mDAO = new MessageDAOImpl();
-		            	ArrayList<Message> messages = mDAO.retrieveMessages(user.getId(), targetUser.getId());
-		            	if (messages != null) 
-		            		chatSession.setMessages(messages);
-		            	chatSessions.add(targetUser.getUserName());
-		            	chatWindows.add(chatSession);
-		            	chatSession.setVisible(true);
-		            }
-		        }
-		    }
-		});
-		String header[] = new String[] { "Friends" };
-		dtm.setColumnIdentifiers(header);
 		Choice choice = new Choice();
+		menuBar.add(choice);
 		choice.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
 				switch (arg0.getItem().toString()) {
@@ -231,8 +167,77 @@ public class FriendsList extends JFrame{
 		choice.add("Online");
 		choice.add("Away");
 		choice.add("Show as offline");
-		choice.setBounds(10, 50, 87, 20);
-		contentPane.add(choice);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(new BorderLayout(0, 0));
+		friends = Database.selectFriends(user);
+		dtm = new DefaultTableModel(0, 0) {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1109174466769474675L;
+
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
+		String header[] = new String[] { "Friends" };
+		dtm.setColumnIdentifiers(header);
+		
+				table = new JTable();
+				contentPane.add(table, BorderLayout.CENTER);
+				table.addMouseListener(new MouseAdapter() {
+				    public void mousePressed(MouseEvent me) {
+				        JTable table =(JTable) me.getSource();
+				        Point p = me.getPoint();
+				        int row = table.rowAtPoint(p);
+				        if(me.getButton() == MouseEvent.BUTTON3) {
+				        	Object o = table.getModel().getValueAt(row, 0);
+				            User targetUser = uDAO.select(o.toString());
+				            if (targetUser == null) //sanity check if user clicks on an invalid user
+				            	return;
+				            if (checkFriendAlready(friends, targetUser))
+				            	return;
+				        	if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(frame, "Would you like to add this user as a friend?", "Add user?", JOptionPane.OK_CANCEL_OPTION)) {
+				        		uDAO.acceptRequest(user.getId(), targetUser.getId());
+								try {
+									Thread.sleep(100);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								updateUsers(user, targetUser);
+				        	}
+				        }
+				        if (me.getClickCount() == 2) {
+				        	Object o = table.getModel().getValueAt(row, 0);
+				            User targetUser = uDAO.select(o.toString());
+				            if (targetUser == null) //sanity check if user clicks on an invalid user
+				            	return;
+				            if (!checkFriendAlready(friends, targetUser))
+				            	return;
+				            if (chatSessions.contains(targetUser.getUserName())) {
+				            	if (DEBUG)
+				            		System.out.println("[" + sdf.format(new Date()) + "] " + "User already has chat window open.");
+				            	return;
+				            }
+				            if (socket == null)
+				            	return;
+				            ChatWindow chatSession = new ChatWindow(socket, user, targetUser, friendsList);
+				            if (chatSession != null) {
+				            	MessageDAOImpl mDAO = new MessageDAOImpl();
+				            	ArrayList<Message> messages = mDAO.retrieveMessages(user.getId(), targetUser.getId());
+				            	if (messages != null) 
+				            		chatSession.setMessages(messages);
+				            	chatSessions.add(targetUser.getUserName());
+				            	chatWindows.add(chatSession);
+				            	chatSession.setVisible(true);
+				            }
+				        }
+				    }
+				});
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				logout();

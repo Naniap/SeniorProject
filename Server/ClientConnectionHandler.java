@@ -44,12 +44,13 @@ public class ClientConnectionHandler extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		while (!option.equalsIgnoreCase("exit")) {
+		while (true) {
 			if (!scanner.hasNextLine()) {
 				return;
 			}
 			option = scanner.nextLine();
-			if (option.contains("Chat message: ")) {
+			System.out.println(option);
+			if (option.startsWith("Chat message: ")) {
 				int i = option.indexOf(',', 1 + option.indexOf(','));
 				String message = option.substring(i+1);
 				String targetUser = option.split(",")[1];
@@ -57,20 +58,21 @@ public class ClientConnectionHandler extends Thread {
 				ChatServer.sendMessageTo(originUser, targetUser, message);
 				System.out.println("Chat message detected. User: " + originUser + " Target user: " + targetUser + " Message contents: " + message);
 			}
-			if (option.contains("Username: ")) {
+			if (option.startsWith("Username: ")) {
 				userName = option.split("Username: ")[1];
 				System.out.println("Username bound to: " + userName);
 			}
-			if (option.contains("Logout")) {
+			if (option.startsWith("Logout")) {
 				removeUser();
 				for (ClientConnectionHandler c : ChatServer.getConnections())
 					c.forceRefresh();
+				break;
 			}
-			if (option.contains("Status changed.")) {
+			if (option.startsWith("Status changed.")) {
 				for (ClientConnectionHandler c : ChatServer.getConnections())
 					c.forceRefresh();
 			}
-			if (option.contains("UPDATE USERS: ")) {
+			if (option.startsWith("UPDATE USERS: ")) {
 				String originUser = option.split("UPDATE USERS: ")[1].split(",")[0].trim();
 				String targetUser = option.split(",")[1].trim();
 				for (ClientConnectionHandler c : ChatServer.getConnections()) {
