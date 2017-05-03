@@ -51,6 +51,7 @@ public class FriendsList extends JFrame{
 	private ArrayList<User> pendingFriends;
 	private DefaultTableModel dtm;
 	private Thread inputThread;
+	private Thread refresh;
 	private OutputStreamWriter osw;
 	private User user;
 	private JFrame frame;
@@ -133,6 +134,14 @@ public class FriendsList extends JFrame{
 			}
 		});
 		mnSettings.add(mntmAddFriend);
+		
+		JMenuItem mntmRefresh = new JMenuItem("Force Refresh");
+		mntmRefresh.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				updateList();
+			}
+		});
+		mnSettings.add(mntmRefresh);
 		Choice choice = new Choice();
 		menuBar.add(choice);
 		choice.addItemListener(new ItemListener() {
@@ -288,6 +297,20 @@ public class FriendsList extends JFrame{
 			}
 		};
 		inputThread.start();
+		/*refresh = new Thread() {
+			public void run() {
+			while (true) {
+				updateList();
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			}
+		};
+		refresh.start();*/
 	}
 	public ArrayList<String> getChatSession () {
 		return chatSessions;
